@@ -1,0 +1,141 @@
+(image_extractor) PS C:\development\playground\image_extractor\image_extractor_js> .\test.ps1
+node .\image-extractor\main.js -f .\images\ -m google -e jfif
+Found Open AI Key.
+Using Open AI model gpt-4o
+Found Gemini AI Key.
+Using Google gemini-1.5-flash
+Folder:     .\images\
+Model:      google
+Extension:  jfif
+Batch size: 1
+(node:18452) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Writing to images\google_2024-11-04-gift-for-the-soul.json.
+Writing to images\google_2024-11-02-gift-for-the-soul.json.
+Writing to images\google_2024-10-29-gift-for-the-soul.json.
+Writing to images\google_2024-10-23-gift-for-the-soul.json.
+Writing to images\google_2024-10-21-gift-for-the-soul.json.
+Writing to images\google_2024-10-15-gift-for-the-soul.json.
+Writing to images\google_2024-10-10-gift-for-the-soul.json.
+Writing to images\google_2024-10-09-gift-for-the-soul.json.
+Writing to images\google_2024-10-05-gift-for-the-soul.json.
+Writing to images\google_2024-10-02-gift-for-the-soul.json.
+Writing to images\google_2024-09-24-gift-for-the-soul.json.
+Writing to images\google_2024-09-12-gift-for-the-soul.json.
+Writing to images\google_2024-09-09-gift-for-the-soul.json.
+Writing to images\google_2024-09-05-gift-for-the-soul.json.
+Writing to images\google_2024-09-03-gift-for-the-soul.json.
+Writing to images\google_2024-08-31-gift-for-the-soul.json.
+Writing to images\google_2024-08-29-gift-for-the-soul.json.
+Writing to images\google_2024-08-28-gift-for-the-soul.json.
+Writing to images\google_2024-08-27-gift-for-the-soul.json.
+Writing to images\google_2024-08-25-gift-for-the-soul.json.
+Writing to images\google_2024-08-24-gift-for-the-soul.json.
+Writing to images\google_2024-08-23-gift-for-the-soul.json.
+Writing to images\google_2024-08-22-gift-for-the-soul.json.
+Image Extractor: 38.171s
+node .\image-extractor\main.js --folder .\images\ --model google --extension jfif --batch_size 2
+Found Open AI Key.
+Using Open AI model gpt-4o
+Found Gemini AI Key.
+Using Google gemini-1.5-flash
+Folder:     .\images\
+Model:      google
+Extension:  jfif
+Batch size: 2
+(node:43656) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Writing to images\google_2024-11-04-gift-for-the-soul.json.
+Writing to images\google_2024-11-02-gift-for-the-soul.json.
+Writing to images\google_2024-10-29-gift-for-the-soul.json.
+Writing to images\google_2024-10-23-gift-for-the-soul.json.
+Writing to images\google_2024-10-21-gift-for-the-soul.json.
+Writing to images\google_2024-10-15-gift-for-the-soul.json.
+Writing to images\google_2024-10-10-gift-for-the-soul.json.
+Writing to images\google_2024-10-09-gift-for-the-soul.json.
+Writing to images\google_2024-10-05-gift-for-the-soul.json.
+Writing to images\google_2024-10-02-gift-for-the-soul.json.
+Writing to images\google_2024-09-24-gift-for-the-soul.json.
+Writing to images\google_2024-09-12-gift-for-the-soul.json.
+Writing to images\google_2024-09-09-gift-for-the-soul.json.
+Writing to images\google_2024-09-05-gift-for-the-soul.json.
+Writing to images\google_2024-09-03-gift-for-the-soul.json.
+Writing to images\google_2024-08-31-gift-for-the-soul.json.
+Writing to images\google_2024-08-29-gift-for-the-soul.json.
+Writing to images\google_2024-08-28-gift-for-the-soul.json.
+Writing to images\google_2024-08-27-gift-for-the-soul.json.
+Writing to images\google_2024-08-25-gift-for-the-soul.json.
+Writing to images\google_2024-08-24-gift-for-the-soul.json.
+Writing to images\google_2024-08-23-gift-for-the-soul.json.
+Writing to images\google_2024-08-22-gift-for-the-soul.json.
+Image Extractor: 20.900s
+node .\image-extractor\main.js --folder .\images\ --model openai --extension jfif
+Found Open AI Key.
+Using Open AI model gpt-4o
+Found Gemini AI Key.
+Using Google gemini-1.5-flash
+Folder:     .\images\
+Model:      openai
+Extension:  jfif
+Batch size: 1
+(node:27168) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Writing to images\openai_2024-11-04-gift-for-the-soul.json.
+Writing to images\openai_2024-11-02-gift-for-the-soul.json.
+Writing to images\openai_2024-10-29-gift-for-the-soul.json.
+Writing to images\openai_2024-10-23-gift-for-the-soul.json.
+Writing to images\openai_2024-10-21-gift-for-the-soul.json.
+Writing to images\openai_2024-10-15-gift-for-the-soul.json.
+Writing to images\openai_2024-10-10-gift-for-the-soul.json.
+Writing to images\openai_2024-10-09-gift-for-the-soul.json.
+Writing to images\openai_2024-10-05-gift-for-the-soul.json.
+Writing to images\openai_2024-10-02-gift-for-the-soul.json.
+Writing to images\openai_2024-09-24-gift-for-the-soul.json.
+Writing to images\openai_2024-09-12-gift-for-the-soul.json.
+Writing to images\openai_2024-09-09-gift-for-the-soul.json.
+Writing to images\openai_2024-09-05-gift-for-the-soul.json.
+Writing to images\openai_2024-09-03-gift-for-the-soul.json.
+Writing to images\openai_2024-08-31-gift-for-the-soul.json.
+Writing to images\openai_2024-08-29-gift-for-the-soul.json.
+Writing to images\openai_2024-08-28-gift-for-the-soul.json.
+Writing to images\openai_2024-08-27-gift-for-the-soul.json.
+Writing to images\openai_2024-08-25-gift-for-the-soul.json.
+Writing to images\openai_2024-08-24-gift-for-the-soul.json.
+Writing to images\openai_2024-08-23-gift-for-the-soul.json.
+Writing to images\openai_2024-08-22-gift-for-the-soul.json.
+Image Extractor: 2:00.330 (m:ss.mmm)
+node .\image-extractor\main.js --folder .\images\ --model openai --extension jfif --batch_size 2
+Found Open AI Key.
+Using Open AI model gpt-4o
+Found Gemini AI Key.
+Using Google gemini-1.5-flash
+Folder:     .\images\
+Model:      openai
+Extension:  jfif
+Batch size: 2
+(node:60264) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Writing to images\openai_2024-11-04-gift-for-the-soul.json.
+Writing to images\openai_2024-11-02-gift-for-the-soul.json.
+Writing to images\openai_2024-10-29-gift-for-the-soul.json.
+Writing to images\openai_2024-10-23-gift-for-the-soul.json.
+Writing to images\openai_2024-10-21-gift-for-the-soul.json.
+Writing to images\openai_2024-10-15-gift-for-the-soul.json.
+Writing to images\openai_2024-10-10-gift-for-the-soul.json.
+Writing to images\openai_2024-10-09-gift-for-the-soul.json.
+Writing to images\openai_2024-10-05-gift-for-the-soul.json.
+Writing to images\openai_2024-10-02-gift-for-the-soul.json.
+Writing to images\openai_2024-09-24-gift-for-the-soul.json.
+Writing to images\openai_2024-09-12-gift-for-the-soul.json.
+Writing to images\openai_2024-09-09-gift-for-the-soul.json.
+Writing to images\openai_2024-09-05-gift-for-the-soul.json.
+Writing to images\openai_2024-09-03-gift-for-the-soul.json.
+Writing to images\openai_2024-08-31-gift-for-the-soul.json.
+Writing to images\openai_2024-08-29-gift-for-the-soul.json.
+Writing to images\openai_2024-08-28-gift-for-the-soul.json.
+Writing to images\openai_2024-08-27-gift-for-the-soul.json.
+Writing to images\openai_2024-08-25-gift-for-the-soul.json.
+Writing to images\openai_2024-08-24-gift-for-the-soul.json.
+Writing to images\openai_2024-08-23-gift-for-the-soul.json.
+Writing to images\openai_2024-08-22-gift-for-the-soul.json.
+Image Extractor: 53.429s

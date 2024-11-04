@@ -1,0 +1,103 @@
+(image_extractor) PS C:\development\playground\image_extractor\image_extractor> python .\image_extractor\extraction_main.py convert-folder --folder .\files --model google --extension jfif
+Wrote files\google_2024-08-22-gift-for-the-soul.json.
+Wrote files\google_2024-08-23-gift-for-the-soul.json.
+Wrote files\google_2024-08-24-gift-for-the-soul.json.
+Wrote files\google_2024-08-25-gift-for-the-soul.json.
+Wrote files\google_2024-08-27-gift-for-the-soul.json.
+Wrote files\google_2024-08-28-gift-for-the-soul.json.
+Wrote files\google_2024-08-29-gift-for-the-soul.json.
+Wrote files\google_2024-08-31-gift-for-the-soul.json.
+Wrote files\google_2024-09-03-gift-for-the-soul.json.
+Wrote files\google_2024-09-05-gift-for-the-soul.json.
+Wrote files\google_2024-09-09-gift-for-the-soul.json.
+Wrote files\google_2024-09-12-gift-for-the-soul.json.
+Wrote files\google_2024-09-24-gift-for-the-soul.json.
+Wrote files\google_2024-10-02-gift-for-the-soul.json.
+Wrote files\google_2024-10-05-gift-for-the-soul.json.
+Wrote files\google_2024-10-09-gift-for-the-soul.json.
+Wrote files\google_2024-10-10-gift-for-the-soul.json.
+Wrote files\google_2024-10-15-gift-for-the-soul.json.
+Wrote files\google_2024-10-21-gift-for-the-soul.json.
+Wrote files\google_2024-10-23-gift-for-the-soul.json.
+Wrote files\google_2024-10-29-gift-for-the-soul.json.
+Wrote files\google_2024-11-02-gift-for-the-soul.json.
+Wrote files\google_2024-11-04-gift-for-the-soul.json.
+Elapsed time: 35.18543982505798 seconds.
+(image_extractor) PS C:\development\playground\image_extractor\image_extractor> python .\image_extractor\extraction_main.py convert-folder --folder .\files --model google --extension jfif --batch_size 2
+Using batch size 2.
+Wrote files\google_2024-08-22-gift-for-the-soul.json.
+Wrote files\google_2024-08-23-gift-for-the-soul.json.
+Wrote files\google_2024-08-24-gift-for-the-soul.json.
+Wrote files\google_2024-08-25-gift-for-the-soul.json.
+Wrote files\google_2024-08-27-gift-for-the-soul.json.
+Wrote files\google_2024-08-28-gift-for-the-soul.json.
+Wrote files\google_2024-08-29-gift-for-the-soul.json.
+Wrote files\google_2024-08-31-gift-for-the-soul.json.
+Wrote files\google_2024-09-03-gift-for-the-soul.json.
+Wrote files\google_2024-09-05-gift-for-the-soul.json.
+Wrote files\google_2024-09-09-gift-for-the-soul.json.
+Wrote files\google_2024-09-12-gift-for-the-soul.json.
+Wrote files\google_2024-09-24-gift-for-the-soul.json.
+Wrote files\google_2024-10-02-gift-for-the-soul.json.
+Wrote files\google_2024-10-05-gift-for-the-soul.json.
+Wrote files\google_2024-10-09-gift-for-the-soul.json.
+Wrote files\google_2024-10-10-gift-for-the-soul.json.
+Wrote files\google_2024-10-15-gift-for-the-soul.json.
+Wrote files\google_2024-10-21-gift-for-the-soul.json.
+Wrote files\google_2024-10-23-gift-for-the-soul.json.
+Wrote files\google_2024-10-29-gift-for-the-soul.json.
+Wrote files\google_2024-11-02-gift-for-the-soul.json.
+Wrote files\google_2024-11-04-gift-for-the-soul.json.
+Elapsed time: 20.66871428489685 seconds.
+(image_extractor) PS C:\development\playground\image_extractor\image_extractor> python .\image_extractor\extraction_main.py convert-folder --folder .\files --model openai --extension jfif
+Wrote files\openai_2024-08-22-gift-for-the-soul.json.
+Wrote files\openai_2024-08-23-gift-for-the-soul.json.
+Wrote files\openai_2024-08-24-gift-for-the-soul.json.
+Wrote files\openai_2024-08-25-gift-for-the-soul.json.
+Wrote files\openai_2024-08-27-gift-for-the-soul.json.
+Wrote files\openai_2024-08-28-gift-for-the-soul.json.
+Wrote files\openai_2024-08-29-gift-for-the-soul.json.
+Wrote files\openai_2024-08-31-gift-for-the-soul.json.
+Wrote files\openai_2024-09-03-gift-for-the-soul.json.
+Wrote files\openai_2024-09-05-gift-for-the-soul.json.
+Wrote files\openai_2024-09-09-gift-for-the-soul.json.
+Wrote files\openai_2024-09-12-gift-for-the-soul.json.
+Wrote files\openai_2024-09-24-gift-for-the-soul.json.
+Wrote files\openai_2024-10-02-gift-for-the-soul.json.
+Wrote files\openai_2024-10-05-gift-for-the-soul.json.
+Wrote files\openai_2024-10-09-gift-for-the-soul.json.
+Wrote files\openai_2024-10-10-gift-for-the-soul.json.
+Wrote files\openai_2024-10-15-gift-for-the-soul.json.
+Wrote files\openai_2024-10-21-gift-for-the-soul.json.
+Wrote files\openai_2024-10-23-gift-for-the-soul.json.
+Wrote files\openai_2024-10-29-gift-for-the-soul.json.
+Wrote files\openai_2024-11-02-gift-for-the-soul.json.
+Wrote files\openai_2024-11-04-gift-for-the-soul.json.
+Elapsed time: 104.29246258735657 seconds.
+(image_extractor) PS C:\development\playground\image_extractor\image_extractor> python .\image_extractor\extraction_main.py convert-folder --folder .\files --model openai --extension jfif --batch_size 2
+Using batch size 2.
+Wrote files\openai_2024-08-22-gift-for-the-soul.json.
+Wrote files\openai_2024-08-23-gift-for-the-soul.json.
+Wrote files\openai_2024-08-24-gift-for-the-soul.json.
+Wrote files\openai_2024-08-25-gift-for-the-soul.json.
+Wrote files\openai_2024-08-27-gift-for-the-soul.json.
+Wrote files\openai_2024-08-28-gift-for-the-soul.json.
+Wrote files\openai_2024-08-29-gift-for-the-soul.json.
+Wrote files\openai_2024-08-31-gift-for-the-soul.json.
+Wrote files\openai_2024-09-03-gift-for-the-soul.json.
+Wrote files\openai_2024-09-05-gift-for-the-soul.json.
+Wrote files\openai_2024-09-09-gift-for-the-soul.json.
+Wrote files\openai_2024-09-12-gift-for-the-soul.json.
+Wrote files\openai_2024-09-24-gift-for-the-soul.json.
+Wrote files\openai_2024-10-02-gift-for-the-soul.json.
+Wrote files\openai_2024-10-05-gift-for-the-soul.json.
+Wrote files\openai_2024-10-09-gift-for-the-soul.json.
+Wrote files\openai_2024-10-10-gift-for-the-soul.json.
+Wrote files\openai_2024-10-15-gift-for-the-soul.json.
+Wrote files\openai_2024-10-21-gift-for-the-soul.json.
+Wrote files\openai_2024-10-23-gift-for-the-soul.json.
+Wrote files\openai_2024-10-29-gift-for-the-soul.json.
+Wrote files\openai_2024-11-02-gift-for-the-soul.json.
+Wrote files\openai_2024-11-04-gift-for-the-soul.json.
+Elapsed time: 49.62439942359924 seconds.
+(image_extractor) PS C:\development\playground\image_extractor\image_extractor> 

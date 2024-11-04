@@ -1,0 +1,28 @@
+{
+  "name": "image_extractor_js",
+  "version": "1.0.0",
+  "description": "Extracts text from images using LLMs, like OpenAI gpt-4o and Gemini Flash.",
+  "main": "index.js",
+  "author": "Gil Fernandes",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@langchain/core": "^0.3.17",
+    "@langchain/google-genai": "^0.1.2",
+    "@langchain/openai": "^0.3.11",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "glob": "^11.0.0",
+    "langchain": "^0.3.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "prettier": "^3.3.3"
+  },
+  "scripts": {
+    "test": "jest",
+    "pretty": "yarn prettier . --write",
+    "example1": "node ./image-extractor/main.js -f ./images/ -m google -e jfif -b 1",
+    "example2": "node ./image-extractor/main.js -f ./images/ -m google -e jfif -b 2"
+  }
+}
