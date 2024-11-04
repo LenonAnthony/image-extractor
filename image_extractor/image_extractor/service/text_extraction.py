@@ -63,6 +63,7 @@ def execute_batch_structured_prompt(
                     path=path,
                     title=extract.title,
                     main_text=extract.main_text,
+                    main_text_en=extract.main_text_en,
                     objects_in_image=extract.objects_in_image,
                 )
             )
