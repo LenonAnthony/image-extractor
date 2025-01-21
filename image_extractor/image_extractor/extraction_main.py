@@ -3,25 +3,20 @@ from enum import StrEnum
 import click
 import time
 
-from image_extractor.service.text_extraction import GoogleAiConversion, OpenAiConversion
+from image_extractor.service.text_extraction import OpenAiConversion
 from image_extractor.model.text_extract import TextExtract
-
 
 class Model(StrEnum):
     OPENAI = "openai"
-    GOOGLE = "google"
-
 
 class Extension(StrEnum):
     JPG = "jpg"
     PNG = "png"
     JFIF = "jfif"
 
-
 @click.group()
 def cli():
     pass
-
 
 @cli.command()
 @click.option(
@@ -44,12 +39,13 @@ def cli():
 @click.option(
     "--batch_size", default=1, help="The size of the batch"
 )
+
 def convert_folder(folder: str, model: str, extension: str, batch_size: int):
     start = time.time()
     path = Path(folder)
     assert path.exists(), f"Path {path} does not exist."
     conversion = (
-        OpenAiConversion() if model == Model.OPENAI.value else GoogleAiConversion()
+        OpenAiConversion() if model == Model.OPENAI.value else None
     )
     files = path.rglob(f"**/*.{extension}")
 
@@ -69,7 +65,6 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
             process_extract(file_extract, file_extract.path)
     end = time.time()
     click.echo(f"Elapsed time: {end - start} seconds.")
-
 
 if __name__ == "__main__":
     cli()

@@ -25,7 +25,6 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-
 def convert_base64(image_path: Path) -> str:
     bytes = image_path.read_bytes()
     return base64.b64encode(bytes).decode("utf-8")
@@ -71,7 +70,6 @@ def execute_batch_structured_prompt(
 
 
 class AiConversion:
-
     def __init__(self, model):
         self.model = model
 
@@ -89,8 +87,3 @@ class OpenAiConversion(AiConversion):
     def __init__(self):
         super().__init__(cfg.chat_open_ai)
 
-
-class GoogleAiConversion(AiConversion):
-
-    def __init__(self):
-        super().__init__(cfg.google_ai)
