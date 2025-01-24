@@ -2,12 +2,13 @@ from pathlib import Path
 from enum import StrEnum
 import click
 import time
-
-from image_extractor.service.text_extraction import OpenAiConversion
+import json
+from image_extractor.service.text_extraction import OpenAiConversion, VertexAiConversation
 from image_extractor.model.text_extract import TextExtract
 
 class Model(StrEnum):
     OPENAI = "openai"
+    VERTEXAI = "vertexai"
 
 class Extension(StrEnum):
     JPG = "jpg"
@@ -45,19 +46,22 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
     path = Path(folder)
     assert path.exists(), f"Path {path} does not exist."
     conversion = (
-        OpenAiConversion() if model == Model.OPENAI.value else None
+        OpenAiConversion() if model == Model.OPENAI.value else VertexAiConversation()
     )
     files = path.rglob(f"**/*.{extension}")
 
-    def process_extract(extract: TextExtract, f: Path):
+    def process_extract(extract: TextExtract, f: Path, elapsed: float):
         target_file = path / f"{model}_{f.stem}.json"
-        target_file.write_text(extract.model_dump_json(indent=2), encoding="utf-8")
+        extract_data = extract.model_dump()
+        extract_data["elapsed"] = elapsed
+        json_data = json.dumps(extract_data, indent=2)
+        target_file.write_text(json_data, encoding="utf-8")
         click.echo(f"Wrote {target_file}.")
 
     if batch_size == 1:
         for f in files:
             extract = conversion.convert_to_text(f)
-            process_extract(extract, f)
+            process_extract(extract, f, time.time() - start)
     elif batch_size > 1:
         click.echo(f"Using batch size {batch_size}.")
         file_extracts = conversion.convert_to_text_batches(list(files), batch_size)
