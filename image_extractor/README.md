@@ -9,8 +9,7 @@ You can either convert the images sequentially or in batches using a simple comm
 ```
 conda create -n image_extractor python=3.13
 conda activate image_extractor
-pip install poetry
-poetry install
+pip install -r requirements.txt
 ```
 
 # Usage examples
