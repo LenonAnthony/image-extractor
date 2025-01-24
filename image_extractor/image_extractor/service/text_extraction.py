@@ -8,7 +8,10 @@ from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
 from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
 
-PROMPT_INSTRUCTION = "Please extract the text from the provided image."
+PROMPT_INSTRUCTION = """Please accurately extract all visible text written in Portuguese (Brazil) from the provided image,
+focusing specifically on elementary school-level essays. Ensure the extraction includes complete sentences, proper formatting (e.g., paragraphs, punctuation),
+and ignores non-text elements (e.g., images, doodles, watermarks). Prioritize educational content such as student essays, writing exercises, or school assignments. Confirm that the extracted text is in its
+original language (Portuguese) and relevant to elementary education in Brazil."""
 
 def convert_base64(image_path: Path) -> str:
     bytes = image_path.read_bytes()
