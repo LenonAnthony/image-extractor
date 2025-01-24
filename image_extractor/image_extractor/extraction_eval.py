@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import json
-import difflib
+from torcheval.metrics import WordErrorRate
 from typing import Dict
 import locale
 import argparse
@@ -38,9 +38,6 @@ def load_ground_truth(csv_path: str) -> Dict[str, str]:
     df = pd.read_csv(csv_path)
     return {row["path"]: row["word"].lower().strip() for _, row in df.iterrows()}
 
-def calculate_similarity(str1: str, str2: str) -> float:
-    return difflib.SequenceMatcher(None, str1, str2).ratio()
-
 def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) -> pd.DataFrame:
     comparisons = []
     
@@ -50,14 +47,17 @@ def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) 
         extracted_text = result.get("text", "")
         elapsed = result.get("elapsed", 0.0)
         
-        similarity = calculate_similarity(gt_text, extracted_text)
+        metric = WordErrorRate()
+        metric.update([extracted_text], [gt_text])  
+        wer = metric.compute().item() 
+        
         exact_match = gt_text == extracted_text
         
         comparisons.append({
             "file": path,
             "ground_truth": gt_text,
             "extracted_text": extracted_text,
-            "similarity": similarity,
+            "word_error_rate": wer,
             "exact_match": exact_match,
             "elapsed": elapsed
         })
@@ -67,10 +67,10 @@ def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) 
 def generate_report(df: pd.DataFrame, output_path: str, model_name: str):
     total_files = len(df)
     exact_matches = df["exact_match"].sum()
-    avg_similarity = df["similarity"].mean()
+    avg_wer = df["word_error_rate"].mean()
     total_elapsed = df["elapsed"].sum()
     
-    df["similarity"] = df["similarity"].apply(lambda x: locale.format_string("%.2f", x))
+    df["word_error_rate"] = df["word_error_rate"].apply(lambda x: locale.format_string("%.2f", x))
     df["elapsed"] = df["elapsed"].apply(lambda x: locale.format_string("%.2f", x))
     
     df.to_csv(output_path, index=False)
@@ -78,7 +78,7 @@ def generate_report(df: pd.DataFrame, output_path: str, model_name: str):
     print(f"\nAnalysis Summary:")
     print(f"Total files analyzed: {total_files}")
     print(f"Exact matches: {exact_matches} ({(exact_matches/total_files)*100:.2f}%)")
-    print(f"Average similarity: {avg_similarity:.2f}")
+    print(f"average WER: {avg_wer:.2f}")
     print(f"Total elapsed time: {locale.format_string('%.2f', total_elapsed)} seconds")
 
 def main():
