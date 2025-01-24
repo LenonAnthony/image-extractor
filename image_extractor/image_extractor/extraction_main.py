@@ -60,8 +60,10 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
 
     if batch_size == 1:
         for f in files:
+            start_file = time.time()
             extract = conversion.convert_to_text(f)
-            process_extract(extract, f, time.time() - start)
+            elapsed_file = time.time() - start_file
+            process_extract(extract, f, elapsed_file)
     elif batch_size > 1:
         click.echo(f"Using batch size {batch_size}.")
         file_extracts = conversion.convert_to_text_batches(list(files), batch_size)
