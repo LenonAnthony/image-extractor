@@ -5,6 +5,7 @@ from torcheval.metrics import WordErrorRate
 from typing import Dict
 import locale
 import argparse
+from Levenshtein import editops
 
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
@@ -38,27 +39,64 @@ def load_ground_truth(csv_path: str) -> Dict[str, str]:
     df = pd.read_csv(csv_path)
     return {row["path"]: row["word"].lower().strip() for _, row in df.iterrows()}
 
+def calculate_cer(gt: str, extracted: str) -> float:
+    if len(gt) == 0:
+        return 1.0 if len(extracted) > 0 else 0.0
+    edits = len(editops(gt, extracted))
+    return edits / len(gt)
+
+def calculate_char_metrics(gt: str, extracted: str) -> dict:
+    if len(gt) == 0 and len(extracted) == 0:
+        return {"precision": 1.0, "recall": 1.0, "f1": 1.0}
+    if len(gt) == 0:
+        return {"precision": 0.0, "recall": 0.0, "f1": 0.0}
+    
+    ops = editops(gt, extracted)
+    insertions = sum(1 for op in ops if op[0] == 'insert')
+    deletions = sum(1 for op in ops if op[0] == 'delete')
+    replaces = sum(1 for op in ops if op[0] == 'replace')
+    
+    tp = len(gt) - (deletions + replaces)  
+    fp = insertions + replaces              
+    fn = deletions + replaces      
+    
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+    
+    return {
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
 def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) -> pd.DataFrame:
     comparisons = []
-    
     for path in ground_truth.keys():
         gt_text = ground_truth.get(path, "")
         result = api_results.get(path, {})
         extracted_text = result.get("text", "")
         elapsed = result.get("elapsed", 0.0)
         
-        metric = WordErrorRate()
-        metric.update([extracted_text], [gt_text])  
-        wer = metric.compute().item() 
+        # WER
+        metric_wer = WordErrorRate()
+        metric_wer.update([extracted_text], [gt_text])  
+        wer = metric_wer.compute().item()
         
-        exact_match = gt_text == extracted_text
+        #CER
+        cer = calculate_cer(gt_text, extracted_text)
+        char_metrics = calculate_char_metrics(gt_text, extracted_text)
         
         comparisons.append({
             "file": path,
             "ground_truth": gt_text,
             "extracted_text": extracted_text,
             "word_error_rate": wer,
-            "exact_match": exact_match,
+            "character_error_rate": cer,
+            "precision": char_metrics["precision"],
+            "recall": char_metrics["recall"],
+            "f1": char_metrics["f1"],
+            "exact_match_char": (gt_text == extracted_text),
             "elapsed": elapsed
         })
     
@@ -66,19 +104,31 @@ def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) 
 
 def generate_report(df: pd.DataFrame, output_path: str, model_name: str):
     total_files = len(df)
-    exact_matches = df["exact_match"].sum()
+    exact_matches_char = df["exact_match_char"].sum()
     avg_wer = df["word_error_rate"].mean()
+    avg_cer = df["character_error_rate"].mean()
+    avg_precision = df["precision"].mean()
+    avg_recall = df["recall"].mean()
+    avg_f1 = df["f1"].mean()
     total_elapsed = df["elapsed"].sum()
     
     df["word_error_rate"] = df["word_error_rate"].apply(lambda x: locale.format_string("%.2f", x))
+    df["character_error_rate"] = df["character_error_rate"].apply(lambda x: locale.format_string("%.2f", x))
+    df["precision"] = df["precision"].apply(lambda x: locale.format_string("%.2f", x))
+    df["recall"] = df["recall"].apply(lambda x: locale.format_string("%.2f", x))
+    df["f1"] = df["f1"].apply(lambda x: locale.format_string("%.2f", x))
     df["elapsed"] = df["elapsed"].apply(lambda x: locale.format_string("%.2f", x))
     
     df.to_csv(output_path, index=False)
     
     print(f"\nAnalysis Summary:")
     print(f"Total files analyzed: {total_files}")
-    print(f"Exact matches: {exact_matches} ({(exact_matches/total_files)*100:.2f}%)")
-    print(f"average WER: {avg_wer:.2f}")
+    print(f"Exact character matches: {exact_matches_char} ({(exact_matches_char/total_files)*100:.2f}%)")
+    print(f"Average WER: {avg_wer:.2f}")
+    print(f"Average CER: {avg_cer:.2f}")
+    print(f"Average Precision: {avg_precision:.2f}")
+    print(f"Average Recall: {avg_recall:.2f}")
+    print(f"Average F1-Score: {avg_f1:.2f}")
     print(f"Total elapsed time: {locale.format_string('%.2f', total_elapsed)} seconds")
 
 def main():
