@@ -43,15 +43,15 @@ def cli():
 
 def convert_folder(folder: str, model: str, extension: str, batch_size: int):
     start = time.time()
-    path = Path(folder)
-    assert path.exists(), f"Path {path} does not exist."
+    root = Path(folder)
+    assert root.exists(), f"Path {root} does not exist."
     conversion = (
         OpenAiConversion() if model == Model.OPENAI.value else VertexAiConversation()
     )
-    files = path.rglob(f"**/*.{extension}")
+    files = root.rglob(f"**/*.{extension}")
 
     def process_extract(extract: TextExtract, f: Path, elapsed: float):
-        target_file = path / f"{model}_{f.stem}.json"
+        target_file = f.parent / f"{model}_{f.stem}.json"
         extract_data = extract.model_dump()
         extract_data["elapsed"] = elapsed
         json_data = json.dumps(extract_data, indent=2)

@@ -9,35 +9,39 @@ from Levenshtein import editops
 
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
-def load_openai_results(sample_dir: str) -> Dict[str, dict]:
+def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str, dict]:
     results = {}
     path = Path(sample_dir)
-    for json_file in path.glob("openai_*.json"):
+    json_files = list(path.rglob(f"{model}_*.json"))
+    processed_dirs = set()
+    
+    for json_file in json_files:
         with open(json_file, "r", encoding="utf-8") as f:
             data = json.load(f)
+            relative_path = json_file.parent.relative_to(path)
             file_num = json_file.stem.split("_")[-1]
-            results[f"{file_num}.png"] = {
+            image_key = str(relative_path / f"{file_num}.{extension}")
+            results[image_key] = {
                 "text": data["main_text"].lower().strip(),
                 "elapsed": data.get("elapsed", 0.0)
             }
-    return results
-
-def load_vertexai_results(sample_dir: str) -> Dict[str, dict]:
-    results = {}
-    path = Path(sample_dir)
-    for json_file in path.glob("vertexai_*.json"):
-        with open(json_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            file_num = json_file.stem.split("_")[-1]
-            results[f"{file_num}.png"] = {
-                "text": data["main_text"].lower().strip(),
-                "elapsed": data.get("elapsed", 0.0)
-            }
+            processed_dirs.add(json_file.parent)
+    
+    all_subdirs = {d for d in path.rglob('*') if d.is_dir() and d != path}
+    missing_dirs = all_subdirs - processed_dirs
+    
+    for dir_missing in missing_dirs:
+        print(f"Warning: No JSON files for model '{model}' found in {dir_missing}")
+        
+    if not json_files:
+        print(f"Warning: No JSON files found for model '{model}' in {sample_dir}")
+    
     return results
 
 def load_ground_truth(csv_path: str) -> Dict[str, str]:
     df = pd.read_csv(csv_path)
-    return {row["path"]: row["word"].lower().strip() for _, row in df.iterrows()}
+    df["word"] = df["word"].fillna("").astype(str).str.lower().str.strip()
+    return {row["path"]: row["word"] for _, row in df.iterrows()}
 
 def calculate_cer(gt: str, extracted: str) -> float:
     if len(gt) == 0:
@@ -134,18 +138,16 @@ def generate_report(df: pd.DataFrame, output_path: str, model_name: str):
 def main():
     parser = argparse.ArgumentParser(description='Generate report comparing the results of text extraction models')
     parser.add_argument('--model', required=True, choices=['openai', 'vertexai'],
-                       help='Choice model (openai or vertexai)')
+                       help='Model to evaluate (openai or vertexai)')
+    parser.add_argument('--extension', default='png', choices=['png', 'jpg', 'jpeg', 'jfif'],
+                       help='Image file extension to process (default: png)')
     args = parser.parse_args()
     
-    sample_dir = "sample"
+    sample_dir = "dataset"
     words_csv = f"{sample_dir}/words.csv"
-    output_csv = f"analysis_{args.model}.csv"
+    output_csv = f"{sample_dir}/analysis_{args.model}.csv"
 
-    if args.model == 'openai':
-        results = load_openai_results(sample_dir)
-    else:
-        results = load_vertexai_results(sample_dir)
-    
+    results = load_model_results(sample_dir, args.model, args.extension)
     ground_truth = load_ground_truth(words_csv)
     results_df = compare_results(results, ground_truth)
     
