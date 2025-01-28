@@ -6,6 +6,10 @@ from typing import Dict
 import locale
 import argparse
 from Levenshtein import editops
+import os   
+from dotenv import load_dotenv
+
+load_dotenv()
 
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
@@ -143,9 +147,10 @@ def main():
                        help='Image file extension to process (default: png)')
     args = parser.parse_args()
     
-    sample_dir = "dataset"
-    words_csv = f"{sample_dir}/words.csv"
-    output_csv = f"{sample_dir}/analysis_{args.model}.csv"
+    sample_dir = "dataset-15-test"
+    words_csv = f"{sample_dir}/words-15-test.csv"
+    output_model = os.getenv("OPENAI_MODEL") if args.model == "openai" else os.getenv("GEMINI_MODEL")
+    output_csv = f"{sample_dir}/analysis_{output_model}.csv"
 
     results = load_model_results(sample_dir, args.model, args.extension)
     ground_truth = load_ground_truth(words_csv)
