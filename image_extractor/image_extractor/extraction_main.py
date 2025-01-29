@@ -51,12 +51,15 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
     files = root.rglob(f"**/*.{extension}")
 
     def process_extract(extract: TextExtract, f: Path, elapsed: float):
-        target_file = f.parent / f"{model}_{f.stem}.json"
-        extract_data = extract.model_dump()
-        extract_data["elapsed"] = elapsed
-        json_data = json.dumps(extract_data, indent=2)
-        target_file.write_text(json_data, encoding="utf-8")
-        click.echo(f"Wrote {target_file}.")
+        if extract is not None:
+            target_file = f.parent / f"{model}_{f.stem}.json"
+            extract_data = extract.model_dump()
+            extract_data["elapsed"] = elapsed
+            json_data = json.dumps(extract_data, indent=2)
+            target_file.write_text(json_data, encoding="utf-8")
+            click.echo(f"Wrote {target_file}.")
+        else:
+            click.echo(f"Could not extract text from {f}.")
 
     if batch_size == 1:
         for f in files:
