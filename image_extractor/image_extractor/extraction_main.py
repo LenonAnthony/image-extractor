@@ -50,28 +50,32 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
     )
     files = root.rglob(f"**/*.{extension}")
 
-    def process_extract(extract: TextExtract, f: Path, elapsed: float):
-        if extract is not None:
-            target_file = f.parent / f"{model}_{f.stem}.json"
-            extract_data = extract.model_dump()
-            extract_data["elapsed"] = elapsed
-            json_data = json.dumps(extract_data, indent=2)
-            target_file.write_text(json_data, encoding="utf-8")
-            click.echo(f"Wrote {target_file}.")
-        else:
-            click.echo(f"Could not extract text from {f}.")
+    def check_existing_file(file_path: Path, model: str) -> bool:
+        target_file = file_path.parent / f"{model}_{file_path.stem}.json"
+        return target_file.exists()
 
-    if batch_size == 1:
-        for f in files:
-            start_file = time.time()
-            extract = conversion.convert_to_text(f)
-            elapsed_file = time.time() - start_file
-            process_extract(extract, f, elapsed_file)
-    elif batch_size > 1:
-        click.echo(f"Using batch size {batch_size}.")
-        file_extracts = conversion.convert_to_text_batches(list(files), batch_size)
-        for file_extract in file_extracts:
-            process_extract(file_extract, file_extract.path)
+    for f in files:
+        if check_existing_file(f, model):
+            click.echo(f"File {f} was already processed.")
+            continue
+
+        start_file = time.time()
+        extract = conversion.convert_to_text(f)
+        elapsed_file = time.time() - start_file
+
+        def process_extract(extract: TextExtract, f: Path, elapsed: float):
+            if extract is not None:
+                target_file = f.parent / f"{model}_{f.stem}.json"
+                extract_data = extract.model_dump()
+                extract_data["elapsed"] = elapsed
+                json_data = json.dumps(extract_data, indent=2)
+                target_file.write_text(json_data, encoding="utf-8")
+                click.echo(f"Wrote {target_file}.")
+            else:
+                click.echo(f"Could not extract text from {f}.")
+
+        process_extract(extract, f, elapsed_file)
+
     end = time.time()
     click.echo(f"Elapsed time: {end - start} seconds.")
 
