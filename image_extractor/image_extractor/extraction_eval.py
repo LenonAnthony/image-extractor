@@ -84,13 +84,22 @@ def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) 
     for path in ground_truth.keys():
         gt_text = ground_truth.get(path, "")
         result = api_results.get(path, {})
-        extracted_text = result.get("main_text", "")
+        extracted_text = result.get("main_text", "").strip() 
         elapsed = result.get("elapsed", 0.0)
         
-        metric_wer = WordErrorRate()
-        metric_wer.update([extracted_text], [gt_text])
-        wer = metric_wer.compute().item()
-        
+        #WER
+        wer = float('inf')
+        if gt_text == "":
+            if extracted_text == "":
+                wer = 0.0
+            else:
+                wer = 1.0
+        else:
+            metric_wer = WordErrorRate()
+            metric_wer.update([extracted_text], [gt_text])
+            wer = metric_wer.compute().item()
+
+        #CER
         cer = calculate_cer(gt_text, extracted_text)
         char_metrics = calculate_char_metrics(gt_text, extracted_text)
         
@@ -147,7 +156,15 @@ def main():
     parser.add_argument('--sample-dir', default='sample', help='Directory containing the sample data')
     parser.add_argument('--csv-file', default='words.csv', help='Name of the CSV file containing ground truth')
     args = parser.parse_args()
-    
+
+    # tem que estar no formato de arquivo /dataset-15-test/subpastas/arquivos (.jpg e .json)
+    # como o words.csv tem que estar em /dataset-15-test/words-15-test.csv
+    # a chave path do words-15-test.csv tem que ser igual onde o arquivo está.
+    # linha 1 do words-15-test.csv:
+    # path -> dataset-15-test/18945739/0000.jpg, word -> A
+   
+    # Exemplo de cmd: python extraction_eval.py --model vertexai --extension jpg --sample-dir dataset-15-test --csv-file words-15-test.csv
+
     sample_dir = args.sample_dir
     words_csv = os.path.join(sample_dir, args.csv_file)
     output_model = os.getenv("OPENAI_MODEL") if args.model == "openai" else os.getenv("GEMINI_MODEL")
