@@ -1,13 +1,12 @@
 import pandas as pd
 from pathlib import Path
 import json
-from torcheval.metrics import WordErrorRate
 from typing import Dict
 import locale
 import argparse
-from Levenshtein import editops
 import os
 from dotenv import load_dotenv
+from Levenshtein import editops
 
 load_dotenv()
 
@@ -48,12 +47,6 @@ def load_ground_truth(csv_path: str, sample_dir: str) -> Dict[str, str]:
     df["path"] = df["path"].apply(lambda p: p[len(sample_dir) + 1:] if p.startswith(sample_dir + os.sep) else p)
     return {row["path"]: row["word"] for _, row in df.iterrows()}
 
-def calculate_cer(gt: str, extracted: str) -> float:
-    if len(gt) == 0:
-        return 1.0 if len(extracted) > 0 else 0.0
-    edits = len(editops(gt, extracted))
-    return edits / len(gt)
-
 def calculate_char_metrics(gt: str, extracted: str) -> dict:
     if len(gt) == 0 and len(extracted) == 0:
         return {"precision": 1.0, "recall": 1.0, "f1": 1.0}
@@ -87,28 +80,12 @@ def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) 
         extracted_text = result.get("main_text", "").strip() 
         elapsed = result.get("elapsed", 0.0)
         
-        #WER
-        wer = float('inf')
-        if gt_text == "":
-            if extracted_text == "":
-                wer = 0.0
-            else:
-                wer = 1.0
-        else:
-            metric_wer = WordErrorRate()
-            metric_wer.update([extracted_text], [gt_text])
-            wer = metric_wer.compute().item()
-
-        #CER
-        cer = calculate_cer(gt_text, extracted_text)
         char_metrics = calculate_char_metrics(gt_text, extracted_text)
         
         comparisons.append({
             "file": path,
             "ground_truth": gt_text,
             "extracted_text": extracted_text,
-            "word_error_rate": wer,
-            "character_error_rate": cer,
             "precision": char_metrics["precision"], 
             "recall": char_metrics["recall"],
             "f1": char_metrics["f1"],
@@ -121,15 +98,11 @@ def compare_results(api_results: Dict[str, dict], ground_truth: Dict[str, str]) 
 def generate_report(df: pd.DataFrame, output_path: str, model_name: str):
     total_files = len(df)
     exact_matches_char = df["exact_match_char"].sum()
-    avg_wer = df["word_error_rate"].mean()
-    avg_cer = df["character_error_rate"].mean()
     avg_precision = df["precision"].mean()
     avg_recall = df["recall"].mean()
     avg_f1 = df["f1"].mean()
     total_elapsed = df["elapsed"].sum()
     
-    df["word_error_rate"] = df["word_error_rate"].apply(lambda x: locale.format_string("%.2f", x))
-    df["character_error_rate"] = df["character_error_rate"].apply(lambda x: locale.format_string("%.2f", x))
     df["precision"] = df["precision"].apply(lambda x: locale.format_string("%.2f", x))
     df["recall"] = df["recall"].apply(lambda x: locale.format_string("%.2f", x))
     df["f1"] = df["f1"].apply(lambda x: locale.format_string("%.2f", x))
@@ -139,9 +112,8 @@ def generate_report(df: pd.DataFrame, output_path: str, model_name: str):
     
     print(f"\nAnalysis Summary:")
     print(f"Total files analyzed: {total_files}")
-    print(f"Exact character matches: {exact_matches_char} ({(exact_matches_char/total_files)*100:.2f}%)")
-    print(f"Average WER: {avg_wer:.2f}")
-    print(f"Average CER: {avg_cer:.2f}")
+    print(f"Exact matches: {exact_matches_char} ({(exact_matches_char/total_files)*100:.2f}%)")
+    print(f"CER: {total_files - exact_matches_char} ({((total_files - exact_matches_char)/total_files)*100:.2f}%)")
     print(f"Average Precision: {avg_precision:.2f}")
     print(f"Average Recall: {avg_recall:.2f}")
     print(f"Average F1-Score: {avg_f1:.2f}")
@@ -156,14 +128,6 @@ def main():
     parser.add_argument('--sample-dir', default='sample', help='Directory containing the sample data')
     parser.add_argument('--csv-file', default='words.csv', help='Name of the CSV file containing ground truth')
     args = parser.parse_args()
-
-    # tem que estar no formato de arquivo /dataset-15-test/subpastas/arquivos (.jpg e .json)
-    # como o words.csv tem que estar em /dataset-15-test/words-15-test.csv
-    # a chave path do words-15-test.csv tem que ser igual onde o arquivo está.
-    # linha 1 do words-15-test.csv:
-    # path -> dataset-15-test/18945739/0000.jpg, word -> A
-   
-    # Exemplo de cmd: python extraction_eval.py --model vertexai --extension jpg --sample-dir dataset-15-test --csv-file words-15-test.csv
 
     sample_dir = args.sample_dir
     words_csv = os.path.join(sample_dir, args.csv_file)
