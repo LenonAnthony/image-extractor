@@ -3,12 +3,13 @@ from enum import StrEnum
 import click
 import time
 import json
-from image_extractor.service.text_extraction import OpenAiConversion, VertexAiConversation
+from image_extractor.service.text_extraction import OpenAiConversion, VertexAiConversation, GoogleVisionConversion
 from image_extractor.model.text_extract import TextExtract
 
 class Model(StrEnum):
     OPENAI = "openai"
     VERTEXAI = "vertexai"
+    GOOGLE_VISION = "google_vision"
 
 class Extension(StrEnum):
     JPG = "jpg"
@@ -45,9 +46,17 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
     start = time.time()
     root = Path(folder)
     assert root.exists(), f"Path {root} does not exist."
-    conversion = (
-        OpenAiConversion() if model == Model.OPENAI.value else VertexAiConversation()
-    )
+    
+    conversion = None
+    if model == Model.OPENAI.value:
+        conversion = OpenAiConversion()
+    elif model == Model.VERTEXAI.value:
+        conversion = VertexAiConversation()
+    elif model == Model.GOOGLE_VISION.value:
+        conversion = GoogleVisionConversion()
+    else:
+        raise ValueError(f"Unsupported model type: {model}")
+
     files = root.rglob(f"**/*.{extension}")
 
     def check_existing_file(file_path: Path, model: str) -> bool:

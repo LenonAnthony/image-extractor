@@ -121,8 +121,8 @@ def generate_report(df: pd.DataFrame, output_path: str, model_name: str):
 
 def main():
     parser = argparse.ArgumentParser(description='Generate report comparing the results of text extraction models')
-    parser.add_argument('--model', required=True, choices=['openai', 'vertexai'],
-                       help='Model to evaluate (openai or vertexai)')
+    parser.add_argument('--model', required=True, choices=['openai', 'vertexai', 'google_vision'],
+                       help='Model to evaluate (openai, vertexai or google_vision)')
     parser.add_argument('--extension', default='png', choices=['png', 'jpg', 'jpeg', 'jfif'],
                        help='Image file extension to process (default: png)')
     parser.add_argument('--sample-dir', default='sample', help='Directory containing the sample data')

@@ -1,14 +1,16 @@
 import subprocess
 import sys
 
-# Lista de dependências a serem instaladas
+# dependencies to install
 dependencies = [
     "python-dotenv",
     "pandas",
     "python-Levenshtein",
     "langchain-google-vertexai==2.0.11",
-    "torcheval"
+    "torcheval",
+    "google-cloud-vision",
 ]
+
 
 def install_packages():
     for package in dependencies:
@@ -18,6 +20,19 @@ def install_packages():
             print(f"Successfully installed {package}")
         except subprocess.CalledProcessError as e:
             print(f"Failed to install {package}. Error: {e}")
+    subprocess.check_call(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--pre",
+            "torch",
+            "--index-url",
+            "https://download.pytorch.org/whl/nightly/cpu",
+        ]
+    )
+
 
 if __name__ == "__main__":
     install_packages()
