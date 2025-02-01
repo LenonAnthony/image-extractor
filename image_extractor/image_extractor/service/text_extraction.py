@@ -7,6 +7,7 @@ from image_extractor.config import cfg
 from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
 from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
+from google.cloud import vision
 
 PROMPT_INSTRUCTION = """Extraia o texto da imagem. Considere o idioma Português."""
 
@@ -97,4 +98,31 @@ class OpenAiConversion(AiConversion):
 class VertexAiConversation(AiConversion):
     def __init__(self):
         super().__init__(cfg.vertexai_gemini)
+
+class GoogleVisionConversion(AiConversion):
+    def __init__(self):
+        super().__init__(cfg.google_vision)
+
+    def convert_to_text(self, image_path: Path) -> TextExtract:
+        client = self.model
+        with open(image_path, "rb") as image_file:
+            content = image_file.read()
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image)
+        texts = response.text_annotations
+
+        if texts:
+            extracted_text = texts[0].description
+        else:
+            extracted_text = ""
+
+        if response.error.message:
+            raise Exception(
+                f"{response.error.message}\nFor more info on error messages, check: "
+                "https://cloud.google.com/apis/design/errors"
+            )
+
+        return TextExtract(
+            main_text=extracted_text,
+        )
 

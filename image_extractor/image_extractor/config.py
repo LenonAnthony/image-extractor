@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
+from google.cloud import vision
 load_dotenv()
 
 os.environ["GRPC_ENABLE_FORK_SUPPORT"] = "0"
@@ -31,5 +32,9 @@ class Config:
     #                        project=self.project_id, 
     #                        location=self.location)
     #     return None
+
+    @property
+    def google_vision(self):
+        return vision.ImageAnnotatorClient()
 
 cfg = Config()
