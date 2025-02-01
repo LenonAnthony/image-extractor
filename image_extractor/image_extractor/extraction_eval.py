@@ -15,6 +15,7 @@ locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str, dict]:
     results = {}
     path = Path(sample_dir)
+    model = "openai_4o"
     json_files = list(path.rglob(f"{model}_*.json"))
     processed_dirs = set()
     
