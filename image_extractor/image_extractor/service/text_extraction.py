@@ -9,7 +9,11 @@ from langchain_google_vertexai import ChatVertexAI
 from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
 from google.cloud import vision
 
+<<<<<<< HEAD
 PROMPT_INSTRUCTION = """Extraia o texto da imagem. Considere o idioma Português."""
+=======
+PROMPT_INSTRUCTION = """Extract the main text. Consider the Portuguese Language"""
+>>>>>>> cd12b50 (essay eval and other updates)
 
 def convert_base64(image_path: Path) -> str:
     bytes = image_path.read_bytes()

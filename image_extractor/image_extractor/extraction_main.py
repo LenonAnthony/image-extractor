@@ -14,6 +14,7 @@ class Model(StrEnum):
 
 class Extension(StrEnum):
     JPG = "jpg"
+    JPEG = "jpeg"
     PNG = "png"
     JFIF = "jfif"
 
