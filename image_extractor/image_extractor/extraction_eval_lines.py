@@ -44,9 +44,9 @@ def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str,
 
 def load_ground_truth(csv_path: str) -> Dict[str, str]:
     df = pd.read_csv(csv_path)
-    df["word"] = df["word"].fillna("").astype(str).str.lower().str.strip()
+    df["text"] = df["text"].fillna("").astype(str).str.lower().str.strip()
     df["path"] = df["path"].astype(str).str.strip()
-    return {row["path"]: row["word"] for _, row in df.iterrows()}
+    return {row["path"]: row["text"] for _, row in df.iterrows()}
 
 def calculate_char_metrics(gt: str, extracted: str) -> dict:
     if len(gt) == 0 and len(extracted) == 0:
@@ -63,7 +63,8 @@ def calculate_char_metrics(gt: str, extracted: str) -> dict:
             "recall": 0.0,
             "f1": 0.0,
             "cer": len(extracted),
-            "total_chars": 0
+            "total_chars": 0,
+
         }
 
     ops = editops(gt, extracted)
@@ -71,7 +72,7 @@ def calculate_char_metrics(gt: str, extracted: str) -> dict:
     deletions = sum(1 for op in ops if op[0] == "delete")
     replaces = sum(1 for op in ops if op[0] == "replace")
 
-    cer = (insertions + deletions + replaces) / len(gt) if len(gt) > 0 else 0
+    cer = (insertions + deletions + replaces) / len(gt)  if len(gt) > 0 else 0
     total_chars = len(gt)
 
     tp = total_chars - (deletions + replaces)
@@ -85,6 +86,7 @@ def calculate_char_metrics(gt: str, extracted: str) -> dict:
         if (precision + recall) > 0
         else 0.0
     )
+
 
     return {
         "precision": precision,
@@ -204,6 +206,7 @@ def generate_report(
     print(f"Palavras corretas: {correct_words} ({(correct_words/total_words)*100:.2f}%)")
     print(f"Média WER: {avg_wer:.2%}")
     print(f"Total de caracteres no ground truth: {total_chars}")
+    print(f"CER absoluto: {cer_rate * total_chars:.2f}")
     print(f"Média CER por arquivo: {cer_rate:.2%}")
     print(f"Média Precision: {avg_precision:.2%}")
     print(f"Média Recall: {avg_recall:.2%}")

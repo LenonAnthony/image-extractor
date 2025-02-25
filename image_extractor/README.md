@@ -24,3 +24,7 @@ python .\image_extractor\extraction_main.py convert-folder --folder .\files --mo
 python .\image_extractor\extraction_main.py convert-folder --folder .\files --model openai --extension jfif --batch_size 2
 ```
 
+# rodar o eval
+
+python extraction_eval.py --model openai --extension jpg --sample-dir dataset-15-test --csv-file words-15-test.csv
+
