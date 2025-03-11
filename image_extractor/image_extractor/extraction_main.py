@@ -5,6 +5,7 @@ import time
 import json
 from image_extractor.service.text_extraction import OpenAiConversion, VertexAiConversation, GoogleVisionConversion
 from image_extractor.model.text_extract import TextExtract
+import os
 
 class Model(StrEnum):
     OPENAI = "openai"
@@ -60,12 +61,19 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
 
     files = root.rglob(f"**/*.{extension}")
 
-    def check_existing_file(file_path: Path, model: str) -> bool:
-        target_file = file_path.parent / f"{model}_{file_path.stem}.json"
+    if model == Model.OPENAI.value:
+        model_type = os.getenv("OPENAI_MODEL").replace("gpt-", "")
+    elif model == Model.VERTEXAI.value:  
+        model_type = os.getenv("GEMINI_MODEL").replace("gemini-", "")
+    else:
+        model_type = "unknown"
+
+    def check_existing_file(file_path: Path, model: str, model_type: str) -> bool:
+        target_file = file_path.parent / f"{model}_{model_type}_{file_path.stem}.json"
         return target_file.exists()
 
     for f in files:
-        if check_existing_file(f, model):
+        if check_existing_file(f, model, model_type):
             click.echo(f"File {f} was already processed.")
             continue
 
@@ -75,7 +83,7 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
 
         def process_extract(extract: TextExtract, f: Path, elapsed: float):
             if extract is not None:
-                target_file = f.parent / f"{model}_{f.stem}.json"
+                target_file = f.parent / f"{model}_{model_type}_{f.stem}.json"
                 extract_data = extract.model_dump()
                 extract_data["elapsed"] = elapsed
                 json_data = json.dumps(extract_data, indent=2)

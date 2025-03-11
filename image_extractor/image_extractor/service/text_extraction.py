@@ -9,7 +9,7 @@ from langchain_google_vertexai import ChatVertexAI
 from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
 from google.cloud import vision
 
-PROMPT_INSTRUCTION = """Extract the main text. Consider the Portuguese Language"""
+PROMPT_INSTRUCTION = """Extraia o texto da imagem. Considere o idioma Português."""
 
 def convert_base64(image_path: Path) -> str:
     bytes = image_path.read_bytes()
@@ -93,7 +93,7 @@ class AiConversion:
 
 class OpenAiConversion(AiConversion):
     def __init__(self):
-        super().__init__(cfg.chat_openai)
+        super().__init__(cfg.chat_openai) 
 
 class VertexAiConversation(AiConversion):
     def __init__(self):
