@@ -9,8 +9,8 @@ os.environ["GRPC_ENABLE_FORK_SUPPORT"] = "0"
 os.environ["GRPC_POLL_STRATEGY"] = "poll"
 
 class Config:
-    # quando for utilizar os modelos da openAI, tira os comentários abaixo e
-    #  comenta a parte do gemini (de project_id até o fim da função def vertexai ...etc)
+    # quando for utilizar os modelos da openAI, tira os comentários abaixo de __init__ e chat_openai e
+    #  comentar a parte do gemini (de project_id até o fim da função def vertexai, google vision ...etc)
 
     def __init__(self):
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -38,8 +38,8 @@ class Config:
     #                        location=self.location)
     #     return None
 
-    @property
-    def google_vision(self):
-        return vision.ImageAnnotatorClient()
+    # @property
+    # def google_vision(self):
+    #     return vision.ImageAnnotatorClient()
 
 cfg = Config()
