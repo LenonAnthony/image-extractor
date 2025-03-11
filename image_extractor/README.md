@@ -25,6 +25,7 @@ python .\image_extractor\extraction_main.py convert-folder --folder .\files --mo
 ```
 
 # rodar o eval
-
+```
 python extraction_eval.py --model openai --extension jpg --sample-dir dataset-name --csv-file dataset-name-test.csv
+```
 
