@@ -12,11 +12,16 @@ class Config:
     # quando for utilizar os modelos da openAI, tira os comentários abaixo e
     #  comenta a parte do gemini (de project_id até o fim da função def vertexai ...etc)
 
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    assert openai_api_key, "OpenAI API key is required"
-    openai_model = os.getenv("OPENAI_MODEL")
-    assert openai_model, "OpenAI model is required"
-    chat_openai = ChatOpenAI(model=openai_model, api_key=openai_api_key)
+    def __init__(self):
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        assert self.openai_api_key, "OpenAI API key is required"
+        self.openai_model = os.getenv("OPENAI_MODEL")
+        assert self.openai_model, "OpenAI model is required"
+
+    @property
+    def chat_openai(self):
+        """Instancia `ChatOpenAI` apenas quando necessário"""
+        return ChatOpenAI(model=self.openai_model, api_key=self.openai_api_key)      
     
     # project_id = os.getenv("PROJECT_ID")
     # assert project_id, "Project ID is required"

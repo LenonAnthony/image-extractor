@@ -93,7 +93,7 @@ class AiConversion:
 
 class OpenAiConversion(AiConversion):
     def __init__(self):
-        super().__init__(cfg.chat_openai)
+        super().__init__(cfg.chat_openai) 
 
 class VertexAiConversation(AiConversion):
     def __init__(self):
