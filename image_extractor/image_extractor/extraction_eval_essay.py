@@ -109,7 +109,7 @@ def calculate_word_metrics(gt: str, extracted: str) -> dict:
     extracted_words = extracted.split()
 
     if not gt_words:
-        return {"wer": 1.0, "correct_words": 0, "total_words": 0}
+        return {"wer": 1.0, "correct_words": 0, "total_words": 0, "total_errors": 0}
 
     ops = editops(gt_words, extracted_words)
     errors = len(ops)

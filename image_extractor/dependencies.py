@@ -9,6 +9,7 @@ dependencies = [
     "langchain-google-vertexai==2.0.11",
     "torcheval",
     "google-cloud-vision",
+    "langchain-anthropic",
 ]
 
 

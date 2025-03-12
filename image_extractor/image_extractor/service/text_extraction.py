@@ -6,6 +6,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from image_extractor.config import cfg
 from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
+from langchain_anthropic import ChatAnthropic
 from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
 from google.cloud import vision
 
@@ -40,6 +41,19 @@ def create_text_extract_chain(chat_model: BaseChatModel):
                     "image_url": {"url": "data:image/jpeg;base64,{image_data}"},
                 }
             ])
+        ])
+    elif isinstance(chat_model, ChatAnthropic):
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("system", PROMPT_INSTRUCTION),
+            (
+                "user",
+                [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": "data:image/jpeg;base64,{image_data}"},
+                    }
+                ],
+            ),
         ])
     else:
         raise ValueError(f"Model type {type(chat_model)} not supported")
@@ -125,4 +139,8 @@ class GoogleVisionConversion(AiConversion):
         return TextExtract(
             main_text=extracted_text,
         )
+
+class AnthropicConversion(AiConversion):
+    def __init__(self):
+        super().__init__(cfg.chat_anthropic)
 

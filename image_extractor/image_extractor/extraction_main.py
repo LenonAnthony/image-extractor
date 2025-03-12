@@ -3,7 +3,7 @@ from enum import StrEnum
 import click
 import time
 import json
-from image_extractor.service.text_extraction import OpenAiConversion, VertexAiConversation, GoogleVisionConversion
+from image_extractor.service.text_extraction import OpenAiConversion, VertexAiConversation, GoogleVisionConversion, AnthropicConversion
 from image_extractor.model.text_extract import TextExtract
 import os
 
@@ -11,6 +11,7 @@ class Model(StrEnum):
     OPENAI = "openai"
     VERTEXAI = "vertexai"
     GOOGLE_VISION = "google_vision"
+    ANTHROPIC = "anthropic"
 
 class Extension(StrEnum):
     JPG = "jpg"
@@ -56,6 +57,8 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
         conversion = VertexAiConversation()
     elif model == Model.GOOGLE_VISION.value:
         conversion = GoogleVisionConversion()
+    elif model == Model.ANTHROPIC.value:
+        conversion = AnthropicConversion()
     else:
         raise ValueError(f"Unsupported model type: {model}")
 
@@ -65,6 +68,8 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
         model_type = os.getenv("OPENAI_MODEL").replace("gpt-", "")
     elif model == Model.VERTEXAI.value:  
         model_type = os.getenv("GEMINI_MODEL").replace("gemini-", "")
+    elif model == Model.ANTHROPIC.value:
+        model_type = os.getenv("ANTHROPIC_MODEL").replace("claude-", "")
     else:
         model_type = "unknown"
 
