@@ -210,7 +210,15 @@ def main():
     output_model = (
         os.getenv("OPENAI_MODEL")
         if args.model == "openai"
-        else os.getenv("GEMINI_MODEL")
+        else (
+            os.getenv("GEMINI_MODEL")
+            if args.model == "gemini"
+            else (
+                os.getenv("ANTHROPIC_MODEL")
+                if args.model == "anthropic"
+                else os.getenv("OPENAI_MODEL")
+            )
+        )  
     )
     output_csv = f"{sample_dir}/analysis_{output_model}.csv"
 

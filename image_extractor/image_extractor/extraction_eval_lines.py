@@ -11,6 +11,7 @@ from Levenshtein import editops
 load_dotenv()
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
 
+
 def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str, dict]:
     results = {}
     path = Path(sample_dir)
@@ -42,21 +43,17 @@ def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str,
         print(f"Warning: No JSON files found for model '{model}' in {sample_dir}")
     return results
 
+
 def load_ground_truth(csv_path: str) -> Dict[str, str]:
     df = pd.read_csv(csv_path)
     df["text"] = df["text"].fillna("").astype(str).str.lower().str.strip()
     df["path"] = df["path"].astype(str).str.strip()
     return {row["path"]: row["text"] for _, row in df.iterrows()}
 
+
 def calculate_char_metrics(gt: str, extracted: str) -> dict:
     if len(gt) == 0 and len(extracted) == 0:
-        return {
-            "precision": 1.0,
-            "recall": 1.0,
-            "f1": 1.0,
-            "cer": 0,
-            "total_chars": 0
-        }
+        return {"precision": 1.0, "recall": 1.0, "f1": 1.0, "cer": 0, "total_chars": 0}
     if len(gt) == 0:
         return {
             "precision": 0.0,
@@ -64,7 +61,6 @@ def calculate_char_metrics(gt: str, extracted: str) -> dict:
             "f1": 0.0,
             "cer": len(extracted),
             "total_chars": 0,
-
         }
 
     ops = editops(gt, extracted)
@@ -72,7 +68,7 @@ def calculate_char_metrics(gt: str, extracted: str) -> dict:
     deletions = sum(1 for op in ops if op[0] == "delete")
     replaces = sum(1 for op in ops if op[0] == "replace")
 
-    cer = (insertions + deletions + replaces) / len(gt)  if len(gt) > 0 else 0
+    cer = (insertions + deletions + replaces) / len(gt) if len(gt) > 0 else 0
     total_chars = len(gt)
 
     tp = total_chars - (deletions + replaces)
@@ -87,14 +83,14 @@ def calculate_char_metrics(gt: str, extracted: str) -> dict:
         else 0.0
     )
 
-
     return {
         "precision": precision,
         "recall": recall,
         "f1": f1,
         "cer": cer,
-        "total_chars": total_chars
+        "total_chars": total_chars,
     }
+
 
 def calculate_word_metrics(gt: str, extracted: str) -> dict:
     gt_words = gt.split()
@@ -111,8 +107,9 @@ def calculate_word_metrics(gt: str, extracted: str) -> dict:
     return {
         "wer": wer,
         "correct_words": total_words - errors,
-        "total_words": total_words
+        "total_words": total_words,
     }
+
 
 def compare_results(
     api_results: Dict[str, dict], ground_truth: Dict[str, str]
@@ -172,6 +169,7 @@ def compare_results(
 
     return pd.DataFrame(comparisons), pd.DataFrame(word_errors)
 
+
 def generate_report(
     df: pd.DataFrame, errors_df: pd.DataFrame, output_path: str, model_name: str
 ):
@@ -201,9 +199,13 @@ def generate_report(
 
     print(f"\nResumo da Análise ({model_name}):")
     print(f"Total de arquivos analisados: {total_files}")
-    print(f"Acerto exato de caracteres: {exact_matches_char} ({(exact_matches_char/total_files)*100:.2f}%)")
+    print(
+        f"Acerto exato de caracteres: {exact_matches_char} ({(exact_matches_char/total_files)*100:.2f}%)"
+    )
     print(f"Total de palavras: {total_words}")
-    print(f"Palavras corretas: {correct_words} ({(correct_words/total_words)*100:.2f}%)")
+    print(
+        f"Palavras corretas: {correct_words} ({(correct_words/total_words)*100:.2f}%)"
+    )
     print(f"Média WER: {avg_wer:.2%}")
     print(f"Total de caracteres no ground truth: {total_chars}")
     print(f"CER absoluto: {cer_rate * total_chars:.2f}")
@@ -211,7 +213,10 @@ def generate_report(
     print(f"Média Precision: {avg_precision:.2%}")
     print(f"Média Recall: {avg_recall:.2%}")
     print(f"Média F1-Score: {avg_f1:.2%}")
-    print(f"Tempo total de execução: {locale.format_string('%.2f', total_elapsed)} segundos")
+    print(
+        f"Tempo total de execução: {locale.format_string('%.2f', total_elapsed)} segundos"
+    )
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -220,8 +225,8 @@ def main():
     parser.add_argument(
         "--model",
         required=True,
-        choices=["openai", "vertexai", "google_vision"],
-        help="Modelo a avaliar (openai, vertexai ou google_vision)",
+        choices=["openai", "vertexai", "google_vision", "anthropic"],
+        help="Modelo a avaliar (openai, vertexai, google_vision, anthropic)",
     )
     parser.add_argument(
         "--extension",
@@ -246,7 +251,15 @@ def main():
     output_model = (
         os.getenv("OPENAI_MODEL")
         if args.model == "openai"
-        else os.getenv("GEMINI_MODEL")
+        else (
+            os.getenv("GEMINI_MODEL")
+            if args.model == "gemini"
+            else (
+                os.getenv("ANTHROPIC_MODEL")
+                if args.model == "anthropic"
+                else os.getenv("OPENAI_MODEL")
+            )
+        )  
     )
     output_csv = f"{sample_dir}/analysis_{output_model}.csv"
 
@@ -255,6 +268,7 @@ def main():
     results_df, errors_df = compare_results(results, ground_truth)
 
     generate_report(results_df, errors_df, output_csv, args.model)
+
 
 if __name__ == "__main__":
     main()

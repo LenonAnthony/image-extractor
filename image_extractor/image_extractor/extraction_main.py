@@ -81,7 +81,8 @@ def convert_folder(folder: str, model: str, extension: str, batch_size: int):
         if check_existing_file(f, model, model_type):
             click.echo(f"File {f} was already processed.")
             continue
-
+        
+        click.echo(f"Processing file {f}")
         start_file = time.time()
         extract = conversion.convert_to_text(f)
         elapsed_file = time.time() - start_file
