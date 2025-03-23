@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import click
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, root_mean_squared_error
 from typing import Dict, List, Any, Tuple
 
 def load_original_data(csv_path: str) -> pd.DataFrame:
@@ -26,7 +26,6 @@ def load_prediction_files(predictions_dir: str, model_filter: str = None) -> Lis
         with open(file, 'r', encoding='utf-8') as f:
             try:
                 prediction = json.load(f)
-                # Add the filename to the prediction data
                 prediction['filename'] = file.name
                 predictions.append(prediction)
             except json.JSONDecodeError:
@@ -87,6 +86,7 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     c5_true = [d['c5_target'] for d in matched_data]
     score_true = [d['score_target'] for d in matched_data]
     
+    # Calculate MSE
     mse_c1 = mean_squared_error(c1_true, c1_pred)
     mse_c2 = mean_squared_error(c2_true, c2_pred)
     mse_c3 = mean_squared_error(c3_true, c3_pred)
@@ -94,13 +94,16 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     mse_c5 = mean_squared_error(c5_true, c5_pred)
     mse_score = mean_squared_error(score_true, score_pred)
     
-    rmse_c1 = np.sqrt(mse_c1)
-    rmse_c2 = np.sqrt(mse_c2)
-    rmse_c3 = np.sqrt(mse_c3)
-    rmse_c4 = np.sqrt(mse_c4)
-    rmse_c5 = np.sqrt(mse_c5)
-    rmse_score = np.sqrt(mse_score)
+    # Calculate RMSE using sklearn's built-in function
+    rmse_c1 = root_mean_squared_error(c1_true, c1_pred)
+    rmse_c2 = root_mean_squared_error(c2_true, c2_pred)
+    rmse_c3 = root_mean_squared_error(c3_true, c3_pred)
+    rmse_c4 = root_mean_squared_error(c4_true, c4_pred)
+    rmse_c5 = root_mean_squared_error(c5_true, c5_pred)
+    rmse_score = root_mean_squared_error(score_true, score_pred)
     
+    # Calculate normalized metrics (0-1 scale)
+    # Normalized MSE: MSE / (range of data)²
     nmse_c1 = mse_c1 / (200**2)
     nmse_c2 = mse_c2 / (200**2)
     nmse_c3 = mse_c3 / (200**2)
@@ -108,6 +111,7 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     nmse_c5 = mse_c5 / (200**2)
     nmse_score = mse_score / (1000**2)
     
+    # Normalized RMSE: RMSE / range of the data
     nrmse_c1 = rmse_c1 / 200
     nrmse_c2 = rmse_c2 / 200
     nrmse_c3 = rmse_c3 / 200
@@ -115,6 +119,7 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     nrmse_c5 = rmse_c5 / 200
     nrmse_score = rmse_score / 1000
     
+    # Exact match percentage
     exact_c1 = sum(1 for t, p in zip(c1_true, c1_pred) if t == p) / len(c1_true) * 100
     exact_c2 = sum(1 for t, p in zip(c2_true, c2_pred) if t == p) / len(c2_true) * 100
     exact_c3 = sum(1 for t, p in zip(c3_true, c3_pred) if t == p) / len(c3_true) * 100
@@ -168,7 +173,7 @@ def save_results(matched_data: List[Dict[str, Any]], metrics: Dict[str, Any], ou
     output_path.mkdir(exist_ok=True, parents=True)
     
     prefix = f"{model_name}_" if model_name else ""
-    
+
     df = pd.DataFrame(matched_data)
     csv_path = output_path / f'{prefix}essay_evaluation_results.csv'
     df.to_csv(csv_path, index=False)
@@ -183,7 +188,7 @@ def save_results(matched_data: List[Dict[str, Any]], metrics: Dict[str, Any], ou
     with open(json_path, 'w', encoding='utf-8') as f:
         json.dump(ranking_dict, f, indent=2)
     
-    return df, ranking_dict, csv_path, json_path
+    return csv_path, json_path
 
 def print_summary(metrics: Dict[str, Any], error_ranking: List[Tuple[str, float]], num_samples: int):
     """Print a summary of the evaluation results."""
@@ -218,10 +223,10 @@ def print_summary(metrics: Dict[str, Any], error_ranking: List[Tuple[str, float]
 @click.option('--predictions-dir', required=True, help='Directory containing prediction JSON files')
 @click.option('--output-dir', default='./evaluation_results', help='Directory to save evaluation results')
 @click.option('--model', default=None, help='Optional filter for model names (e.g., "anthropic")')
-def evaluate(original_csv: str, predictions_dir: str, output_dir: str, model_filter: str):
+def evaluate(csv: str, predictions_dir: str, output_dir: str, model: str):
     """Evaluate essay score predictions against actual scores."""
-    original_data = load_original_data(original_csv)
-    predictions = load_prediction_files(predictions_dir, model_filter)
+    original_data = load_original_data(csv)
+    predictions = load_prediction_files(predictions_dir, model)
     
     print(f"Loaded {len(predictions)} prediction files")
     
@@ -236,7 +241,7 @@ def evaluate(original_csv: str, predictions_dir: str, output_dir: str, model_fil
     metrics = calculate_metrics(matched_data)
     error_ranking = generate_error_ranking(metrics)
     
-    csv_path, json_path = save_results(matched_data, metrics, output_dir, model_filter)
+    csv_path, json_path = save_results(matched_data, metrics, output_dir, model)
     
     print_summary(metrics, error_ranking, len(matched_data))
     
