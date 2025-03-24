@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import click
-from sklearn.metrics import mean_squared_error, root_mean_squared_error
+from sklearn.metrics import mean_squared_error, root_mean_squared_error, mean_absolute_error
 from typing import Dict, List, Any, Tuple
 
 def load_original_data(csv_path: str) -> pd.DataFrame:
@@ -101,7 +101,15 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     rmse_c4 = root_mean_squared_error(c4_true, c4_pred)
     rmse_c5 = root_mean_squared_error(c5_true, c5_pred)
     rmse_score = root_mean_squared_error(score_true, score_pred)
-    
+
+    # Calculate MAE
+    mae_c1 = mean_absolute_error(c1_true, c1_pred)
+    mae_c2 = mean_absolute_error(c2_true, c2_pred)
+    mae_c3 = mean_absolute_error(c3_true, c3_pred)
+    mae_c4 = mean_absolute_error(c4_true, c4_pred)
+    mae_c5 = mean_absolute_error(c5_true, c5_pred)
+    mae_score = mean_absolute_error(score_true, score_pred)
+
     # Calculate normalized metrics (0-1 scale)
     # Normalized MSE: MSE / (range of data)²
     nmse_c1 = mse_c1 / (200**2)
@@ -118,6 +126,14 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     nrmse_c4 = rmse_c4 / 200
     nrmse_c5 = rmse_c5 / 200
     nrmse_score = rmse_score / 1000
+
+    # Normalized MAE: MAE / range of the data
+    nmae_c1 = mae_c1 / 200
+    nmae_c2 = mae_c2 / 200
+    nmae_c3 = mae_c3 / 200
+    nmae_c4 = mae_c4 / 200
+    nmae_c5 = mae_c5 / 200
+    nmae_score = mae_score / 1000
     
     # Exact match percentage
     exact_c1 = sum(1 for t, p in zip(c1_true, c1_pred) if t == p) / len(c1_true) * 100
@@ -143,6 +159,22 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
             'c4': nrmse_c4,
             'c5': nrmse_c5,
             'total_score': nrmse_score
+        },
+        'mae': {
+            'c1': mae_c1,
+            'c2': mae_c2,
+            'c3': mae_c3,
+            'c4': mae_c4,
+            'c5': mae_c5,
+            'total_score': mae_score
+        },
+        'normalized_mae': {
+            'c1': nmae_c1,
+            'c2': nmae_c2,
+            'c3': nmae_c3,
+            'c4': nmae_c4,
+            'c5': nmae_c5,
+            'total_score': nmae_score
         },
         'exact_match_percentage': {
             'c1': exact_c1,
@@ -201,6 +233,14 @@ def print_summary(metrics: Dict[str, Any], error_ranking: List[Tuple[str, float]
     
     print("\nNormalized RMSE (0-1 scale, lower is better):")
     for comp, value in metrics['normalized_rmse'].items():
+        print(f"  {comp}: {value:.4f}")
+
+    print("\nMAE (lower is better, competencies in range 0-200 and total_score 0-1000):")
+    for comp, value in metrics['mae'].items():
+        print(f"  {comp}: {value:.4f}")
+    
+    print("\nNormalized MAE (0-1 scale, lower is better):")
+    for comp, value in metrics['normalized_mae'].items():
         print(f"  {comp}: {value:.4f}")
     
     print("\nExact Match Percentage:")
