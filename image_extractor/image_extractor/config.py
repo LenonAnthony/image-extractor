@@ -37,7 +37,7 @@ class Config:
     def chat_anthropic(self):
         """Instancia `ChatAnthropic` apenas quando necessário"""
         if self.anthropic_api_key:
-            return ChatAnthropic(model=self.anthropic_model, api_key=self.anthropic_api_key)
+            return ChatAnthropic(model=self.anthropic_model, api_key=self.anthropic_api_key, max_tokens=2000)
         return None
 
     @property
