@@ -111,7 +111,7 @@ class OpenAiConversion(AiConversion):
 
 class VertexAiConversation(AiConversion):
     def __init__(self):
-        super().__init__(cfg.vertexai_gemini)
+        super().__init__(cfg.gemini_model)
 
 class GoogleVisionConversion(AiConversion):
     def __init__(self):
