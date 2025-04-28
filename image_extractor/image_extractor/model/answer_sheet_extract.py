@@ -1,28 +1,29 @@
-from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import Dict, Optional, List
+from typing import List, Dict, Any, Union
 
 
 class BoundingBox(BaseModel):
-    x1: float = Field(description="Left coordinate (0-1)")
-    y1: float = Field(description="Top coordinate (0-1)")
-    x2: float = Field(description="Right coordinate (0-1)")
-    y2: float = Field(description="Bottom coordinate (0-1)")
+    x1: float = Field(..., description="The x coordinate of the top-left corner of the bounding box")
+    y1: float = Field(..., description="The y coordinate of the top-left corner of the bounding box")
+    x2: float = Field(..., description="The x coordinate of the bottom-right corner of the bounding box")
+    y2: float = Field(..., description="The y coordinate of the bottom-right corner of the bounding box")
 
 
-class DetectionItem(BaseModel):
-    name: str = Field(description="The marked option (A, B, C, D or 'invalid')")
-    bounding_box: BoundingBox = Field(description="The coordinates of the answer on the image")
-    confidence: float = Field(description="Confidence score for the detection (0-1)")
+class QuestionAnswer(BaseModel):
+    question_number: int = Field(..., description="The question number")
+    selected_option: str = Field(..., description="The selected option (A, B, C, D) or 'invalid' if multiple options selected or none selected")
+    confidence: float = Field(..., description="Confidence score between 0 and 1")
+    bounding_box: BoundingBox = Field(..., description="The bounding box of the question area")
 
 
 class AnswerSheetExtract(BaseModel):
-    detections: Dict[str, DetectionItem] = Field(description="Detections keyed by question number")
-    sheet_id: Optional[str] = Field(default=None, description="Optional identifier for the answer sheet")
-
-    def to_detection_format(self) -> Dict:
-        return {"detections": {k: v.model_dump() for k, v in self.detections.items()}}
+    total_questions: int = Field(..., description="Total number of questions detected in the answer sheet")
+    questions: List[QuestionAnswer] = Field(..., description="List of questions with their answers")
+    
+    model_config = {
+        "extra": "ignore"  # Allow additional fields to be ignored
+    }
 
 
 class AnswerSheetExtractWithImage(AnswerSheetExtract):
-    path: Path = Field(description="The original path of the image")
+    path: str = Field(..., description="Path to the image file")
