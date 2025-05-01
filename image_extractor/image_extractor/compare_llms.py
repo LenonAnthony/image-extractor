@@ -94,7 +94,7 @@ def process_model(base_dir, model):
 
 if __name__ == '__main__':
     base = os.path.dirname(os.path.abspath(__file__))
-    models = ['openai', 'anthropic', 'google']
+    models = ['openai', 'anthropic', 'google', 'json_image_yolo'] # Added 'json_image_yolo'
     available = []
     for m in models:
         path = os.path.join(base, 'results_llms', m)
@@ -114,4 +114,6 @@ if __name__ == '__main__':
         print(f"  Accuracy: {met['accuracy']:.2%}  Error rate: {met['error_rate']:.2%}")
         print(f"  Precision: {met['precision']:.2%}  Recall: {met['recall']:.2%}")
         print(f"  Most missed letter: {met['most_missed']}\n")
-    print("CSV files generated: results_openai.csv, results_anthropic.csv, results_google.csv")
+    # Generate the list of expected CSV files dynamically
+    generated_csvs = [f'results_{m}.csv' for m in available]
+    print(f"CSV files generated: {', '.join(generated_csvs)}")
