@@ -31,19 +31,19 @@ class Config:
     @property
     def chat_openai(self):
         """Instancia `ChatOpenAI` apenas quando necessário"""
-        return ChatOpenAI(model=self.openai_model, api_key=self.openai_api_key)
+        return ChatOpenAI(model=self.openai_model, api_key=self.openai_api_key,temperature=0.0)
 
     @property
     def chat_anthropic(self):
         """Instancia `ChatAnthropic` apenas quando necessário"""
         if self.anthropic_api_key:
-            return ChatAnthropic(model=self.anthropic_model, api_key=self.anthropic_api_key, max_tokens=2000)
+            return ChatAnthropic(model=self.anthropic_model, api_key=self.anthropic_api_key, max_tokens=2000, temperature=0.0)
         return None
 
     @property
     def gemini_model(self):
         """Instancia `ChatGoogleGenerativeAI` apenas quando necessário"""
-        return ChatGoogleGenerativeAI(model=self.gemini_model_name)
+        return ChatGoogleGenerativeAI(model=self.gemini_model_name,temperature=0.0)
 
     @property
     def google_vision(self):
