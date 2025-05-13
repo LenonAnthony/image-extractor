@@ -11,26 +11,42 @@ from langchain_google_vertexai import ChatVertexAI
 from langchain_anthropic import ChatAnthropic
 from image_extractor.model.essay_narrative_evaluate import EssayNarrativeEvaluation
 
-PROMPT_INSTRUCTION = """Avalie a redação fornecida a seguir, com base no texto motivador, atribuindo uma nota entre 0 e 5 para cada uma das quatro competências.
-
-Responda apenas com a pontuação de cada competência, sem explicações adicionais.
-
-### Critérios de avaliação:
-- Competência 1 - Registro: Avalia o uso adequado da norma-padrão: ortografia, pontuação, concordância e construção de frases. Redações com muitos erros que dificultam a leitura recebem nota menor.
-- Competência 2 - Coerência temática: Verifica se o texto segue o tema proposto e apresenta uma sequência lógica de ideias, com começo, meio e fim que façam sentido juntos.
-- Competência 3 - Tipologia textual: Julga se o texto é realmente uma narrativa, com elementos como personagem, tempo, lugar, e um enredo com situação inicial, conflito e desfecho.
-- Competência 4 - Coesão: Analisa se as partes do texto estão bem conectadas, com uso de pronomes, conectores e organização de frases que facilitem a leitura e a continuidade das ideias.
-
-### Formato da resposta:
+PROMPT_INSTRUCTION = """Avalie a redação com base no texto motivador, atribuindo notas de 0 a 5 para cada competência. Lembre-se, você fará o papel de um professor avaliando redações de alunos do ensino fundamental entre o 5º e 9º ano.
+**Responda apenas com as notas**, seguindo o formato:  
 c1: [nota de 0 a 5]  
 c2: [nota de 0 a 5]  
 c3: [nota de 0 a 5]  
-c4: [nota de 0 a 5]
+c4: [nota de 0 a 5]  
 
-Redação a ser avaliada:  
-{essay_text}
+### Critérios Detalhados:
+- **C1 - Registro**:  
+  - Nota 5: Sem erros de ortografia, pontuação ou concordância.  
+  - Nota 3: Erros leves que não prejudicam a leitura.  
+  - Nota 0: Erros graves que dificultam a compreensão.  
+  - Exemplo de erro: "Eles foi" → "Eles foram".  
 
-Texto motivador:  
+- **C2 - Coerência Temática**:  
+  - Nota 5: Texto totalmente alinhado ao tema, com começo, meio e fim claros.  
+  - Nota 0: Desvio total do tema ou ausência de estrutura.  
+  - Exemplo: Se o tema é "Amizade", avalie se todas as ideias giram em torno disso.  
+
+- **C3 - Tipologia Textual**:  
+  - Nota 5: Narrativa completa (personagens, conflito, desfecho).  
+  - Nota 0: Ausência de elementos narrativos (ex: texto meramente descritivo).  
+
+- **C4 - Coesão**:  
+  - Nota 5: Frases conectadas com "então", "por isso", "no entanto".  
+  - Nota 0: Ideias desconexas ou repetitivas.  
+
+### Instruções Adicionais:
+- Marque erros gramaticais com * na redação.  
+- Compare explicitamente a redação com o texto motivador.  
+- Faça a análise passo a passo
+
+**Redação a ser avaliada**:  
+{essay_text}  
+
+**Texto motivador**:  
 {prompt_text}
 """
 

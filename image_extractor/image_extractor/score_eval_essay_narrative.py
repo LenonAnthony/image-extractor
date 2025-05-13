@@ -14,16 +14,37 @@ def load_original_data(csv_path: str) -> pd.DataFrame:
     return df
 
 def extract_index(filename: str) -> int:
+    # Updated pattern to handle different filename formats
     match = re.search(r"essay_(\d+)\.json", filename)
+    if not match:
+        # Try alternative pattern
+        match = re.search(r"_(\d+)\.json", filename)
     return int(match.group(1)) if match else -1
 
 def load_prediction_files(predictions_dir: str, model_filter: str = None) -> List[Dict[str, Any]]:
-    predictions_path = Path(predictions_dir)
+    predictions_path = Path(predictions_dir).resolve()
+    print(f"Looking for prediction files in: {predictions_path}")
+    
+    # List a few files in the directory to help with debugging
+    try:
+        all_files = list(predictions_path.glob("*"))
+        if all_files:
+            print(f"Found {len(all_files)} files in the directory. First few: {all_files[:3]}")
+        else:
+            print(f"No files found in {predictions_path}")
+    except Exception as e:
+        print(f"Error listing directory: {e}")
+    
     if model_filter:
-        prediction_files = list(predictions_path.glob(f"{model_filter}*.json"))
+        prediction_files = [f for f in predictions_path.glob("*.json") if model_filter.lower() in f.name.lower()]
+        print(f"Using model filter: {model_filter}, found {len(prediction_files)} matching files")
     else:
         prediction_files = list(predictions_path.glob("*.json"))
+        print(f"No model filter, found {len(prediction_files)} JSON files")
 
+    if prediction_files:
+        print(f"First few prediction files: {[f.name for f in prediction_files[:3]]}")
+    
     prediction_files = sorted(prediction_files, key=lambda f: extract_index(f.name))
     predictions = []
     for file in prediction_files:
@@ -212,6 +233,11 @@ def print_summary(metrics: Dict[str, Any], error_ranking: List[Tuple[str, float]
 @click.option('--output-dir', default='./evaluation_results', help='Directory to save evaluation results')
 @click.option('--model', default=None, help='Optional filter for model names (e.g., "anthropic")')
 def evaluate(csv: str, predictions_dir: str, output_dir: str, model: str):
+    # Add some debugging info about paths
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"CSV path: {os.path.abspath(csv)}")
+    print(f"Predictions directory: {os.path.abspath(predictions_dir)}")
+    
     original_data = load_original_data(csv)
     predictions = load_prediction_files(predictions_dir, model)
     print(f"Loaded {len(predictions)} prediction files")
