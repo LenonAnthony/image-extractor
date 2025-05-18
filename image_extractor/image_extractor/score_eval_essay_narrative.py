@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import click
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import cohen_kappa_score, fbeta_score, mean_squared_error, mean_absolute_error
 from typing import Dict, List, Any, Tuple
 import re
 import math
@@ -82,6 +82,14 @@ def match_predictions_with_originals(predictions: List[Dict[str, Any]], original
 
     return matched_data
 
+def eval_kappa_score(score_true: List[int], score_pred: List[int]) -> float:
+    if len(score_true) != len(score_pred):
+        raise ValueError("True and predicted scores must have the same length.")
+    if len(score_true) == 0:
+        return 0.0
+    kappa = np.corrcoef(score_true, score_pred)[0, 1]
+    return kappa
+
 def root_mean_squared_error(y_true, y_pred):
     return math.sqrt(mean_squared_error(y_true, y_pred))
 
@@ -118,6 +126,14 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     nmae_c2 = mae_c2 / 5
     nmae_c3 = mae_c3 / 5
     nmae_c4 = mae_c4 / 5
+    f_score_c1 = fbeta_score(c1_true, c1_pred, beta=1, average='macro')
+    f_score_c2 = fbeta_score(c2_true, c2_pred, beta=1, average='macro')
+    f_score_c3 = fbeta_score(c3_true, c3_pred, beta=1, average='macro')
+    f_score_c4 = fbeta_score(c4_true, c4_pred, beta=1, average='macro')
+    kappa_c1 = cohen_kappa_score(c1_true, c1_pred)
+    kappa_c2 = cohen_kappa_score(c2_true, c2_pred)
+    kappa_c3 = cohen_kappa_score(c3_true, c3_pred)
+    kappa_c4 = cohen_kappa_score(c4_true, c4_pred)
     exact_c1 = sum(1 for t, p in zip(c1_true, c1_pred) if t == p) / len(c1_true) * 100
     exact_c2 = sum(1 for t, p in zip(c2_true, c2_pred) if t == p) / len(c2_true) * 100
     exact_c3 = sum(1 for t, p in zip(c3_true, c3_pred) if t == p) / len(c3_true) * 100
@@ -159,6 +175,18 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
             'c2': nmae_c2,
             'c3': nmae_c3,
             'c4': nmae_c4,
+        },
+        'f-score': {
+            'c1': f_score_c1,
+            'c2': f_score_c2,
+            'c3': f_score_c3,
+            'c4': f_score_c4,
+        },
+        'kappa': {
+            'c1': kappa_c1,
+            'c2': kappa_c2,
+            'c3': kappa_c3,
+            'c4': kappa_c4,
         },
         'exact_match_percentage': {
             'c1': exact_c1,
@@ -213,6 +241,12 @@ def print_summary(metrics: Dict[str, Any], error_ranking: List[Tuple[str, float]
         print(f"  {comp}: {value:.4f}")
     print("\nNormalized MAE (0-1 scale, lower is better):")
     for comp, value in metrics['normalized_mae'].items():
+        print(f"  {comp}: {value:.4f}")
+    print("\nF-Score (0-1 scale, higher is better):")
+    for comp, value in metrics['f-score'].items():
+        print(f"  {comp}: {value:.4f}")
+    print("\nCohen's Kappa (0-1 scale, higher is better):")
+    for comp, value in metrics['kappa'].items():
         print(f"  {comp}: {value:.4f}")
     print("\nExact Match Percentage:")
     for comp, value in metrics['exact_match_percentage'].items():

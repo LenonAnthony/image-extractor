@@ -11,37 +11,57 @@ from langchain_google_vertexai import ChatVertexAI
 from langchain_anthropic import ChatAnthropic
 from image_extractor.model.essay_narrative_evaluate import EssayNarrativeEvaluation
 
-PROMPT_INSTRUCTION = """Avalie a redação com base no texto motivador, atribuindo notas de 0 a 5 para cada competência. Lembre-se, você fará o papel de um professor avaliando redações de alunos do ensino fundamental entre o 5º e 9º ano.
+PROMPT_INSTRUCTION = """Avalie a redação com base no texto motivador, atribuindo notas de 0 a 5 para cada competência, conforme a **Matriz de Correção por Competência**. 
+Lembre-se de que você estará no papel de um professor corrigindo redações de alunos do ensino fundamental (5º ao 9º ano).  
 **Responda apenas com as notas**, seguindo o formato:  
+
 c1: [nota de 0 a 5]  
 c2: [nota de 0 a 5]  
 c3: [nota de 0 a 5]  
 c4: [nota de 0 a 5]  
 
-### Critérios Detalhados:
-- **C1 - Registro**:  
-  - Nota 5: Sem erros de ortografia, pontuação ou concordância.  
-  - Nota 3: Erros leves que não prejudicam a leitura.  
-  - Nota 0: Erros graves que dificultam a compreensão.  
-  - Exemplo de erro: "Eles foi" → "Eles foram".  
+#### Critérios Detalhados:  
+- **C1 - Registro Formal (Ortografia, Gramática e Pontuação)**  
+  - Nível 5: Estrutura morfossintática bem empregada com até 5 desvios pontuais e não recorrentes.  
+  - Nível 4: Estrutura morfossintática consistente com desvios pontuais.  
+  - Nível 3: Estrutura morfossintática consistente com 1 tipo de desvio recorrente.  
+  - Nível 2: Estrutura morfossintática escassa, com poucos desvios.  
+  - Nível 1: Estrutura morfossintática escassa com desvios recorrentes ou escrita em nível silábico-alfabético.  
 
-- **C2 - Coerência Temática**:  
-  - Nota 5: Texto totalmente alinhado ao tema, com começo, meio e fim claros.  
-  - Nota 0: Desvio total do tema ou ausência de estrutura.  
-  - Exemplo: Se o tema é "Amizade", avalie se todas as ideias giram em torno disso.  
+- **C2 - Coerência Temática (Manutenção do Tema e Progressão Textual)**  
+  - Nível 5: Progressão textual completa e repertório consistente que ultrapassa a situação motivadora.  
+  - Nível 4: Progressão textual completa, com ideias previsíveis, mas detalhadas.  
+  - Nível 3: Progressão completa, mas com paráfrases ou ideias previsíveis e sem detalhamento.  
+  - Nível 2: Progressão insuficiente ou com cópias da situação motivadora.  
+  - Nível 1: Tangenciamento do tema ou falta de progressão textual.  
 
-- **C3 - Tipologia Textual**:  
-  - Nota 5: Narrativa completa (personagens, conflito, desfecho).  
-  - Nota 0: Ausência de elementos narrativos (ex: texto meramente descritivo).  
+- **C3 - Tipologia Textual (Estrutura Narrativa)**  
+  - Nível 5: Desenvolve todas as partes da narrativa (orientação, complicação e desfecho) com personagens, narrador, organização temporal e espaço.  
+  - Nível 4: Apresenta todas as partes, mas desenvolve parcialmente uma delas e/ou apresenta 3 elementos da narrativa.  
+  - Nível 3: Desenvolve duas partes ou apresenta todas, mas sem detalhamento; dois elementos da narrativa.  
+  - Nível 2: Desenvolve uma parte ou apresenta um elemento da narrativa.  
+  - Nível 1: Descreve elementos isolados ou apresenta traços de outros tipos textuais.  
 
-- **C4 - Coesão**:  
-  - Nota 5: Frases conectadas com "então", "por isso", "no entanto".  
-  - Nota 0: Ideias desconexas ou repetitivas.  
+- **C4 - Coesão (Encadeamento de Ideias)**  
+  - Nível 5: Repertório coesivo diversificado, com raras inadequações que não prejudicam a compreensão.  
+  - Nível 4: Repertório coesivo diversificado com desvios pontuais que afetam parcialmente a inteligibilidade.  
+  - Nível 3: Repertório pouco diversificado com um tipo de desvio recorrente.  
+  - Nível 2: Repertório coesivo escasso, com desvios pontuais.  
+  - Nível 1: Palavras e períodos justapostos e desconexos ou repertório coesivo escasso com desvios recorrentes.  
 
-### Instruções Adicionais:
-- Marque erros gramaticais com * na redação.  
-- Compare explicitamente a redação com o texto motivador.  
-- Faça a análise passo a passo
+### Instruções importantes:
+
+1. **Ignore completamente os tokens técnicos** presentes na redação. Eles **não fazem parte do conteúdo real** e foram adicionados por quem digitalizou o texto.  
+   Os tokens a ignorar incluem:
+   - `[P]`, `[p]` → nova linha/parágrafo
+   - `[S]`, `[s]` → símbolo gráfico
+   - `[T]` → título
+   - `[R]`, `[X]` → rasura
+   - `[?]`→ símbolo desconhecido
+   - `[LC]`, `[LT]`, `[lt]` → escrita fora da linha
+2. **Avalie somente o conteúdo real** da redação. Ignore espaçamentos, quebras de linha ou formatações erradas.
+3. **Compare o conteúdo da redação com o texto motivador**.
+4. **Não gere explicações, apenas as notas.**
 
 **Redação a ser avaliada**:  
 {essay_text}  
@@ -92,8 +112,8 @@ def load_essays_from_csv(csv_path: str) -> pd.DataFrame:
     return pd.read_csv(csv_path)
 
 def clean_essay_text(text: str) -> str:
-    text = re.sub(r"<[^>]+>", "", text)  # remove tags HTML como <i>, <t>, etc.
-    text = re.sub(r"\s+", " ", text)  # normaliza espaços e quebras de linha
+    text = re.sub(r"<[^>]+>", "", text) 
+    text = re.sub(r"\s+", " ", text)  
     return text.strip()
 
 class EssayEvaluator:
