@@ -126,10 +126,10 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     nmae_c2 = mae_c2 / 5
     nmae_c3 = mae_c3 / 5
     nmae_c4 = mae_c4 / 5
-    f_score_c1 = fbeta_score(c1_true, c1_pred, beta=1, average='macro')
-    f_score_c2 = fbeta_score(c2_true, c2_pred, beta=1, average='macro')
-    f_score_c3 = fbeta_score(c3_true, c3_pred, beta=1, average='macro')
-    f_score_c4 = fbeta_score(c4_true, c4_pred, beta=1, average='macro')
+    f_score_c1 = fbeta_score(c1_true, c1_pred, beta=1, average='weighted')
+    f_score_c2 = fbeta_score(c2_true, c2_pred, beta=1, average='weighted')
+    f_score_c3 = fbeta_score(c3_true, c3_pred, beta=1, average='weighted')
+    f_score_c4 = fbeta_score(c4_true, c4_pred, beta=1, average='weighted')
     kappa_c1 = cohen_kappa_score(c1_true, c1_pred)
     kappa_c2 = cohen_kappa_score(c2_true, c2_pred)
     kappa_c3 = cohen_kappa_score(c3_true, c3_pred)
