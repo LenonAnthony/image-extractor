@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import click
-from sklearn.metrics import cohen_kappa_score, fbeta_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import cohen_kappa_score, fbeta_score, mean_squared_error, mean_absolute_error, root_mean_squared_error
 from typing import Dict, List, Any, Tuple
 import re
 import math
@@ -82,17 +82,6 @@ def match_predictions_with_originals(predictions: List[Dict[str, Any]], original
 
     return matched_data
 
-def eval_kappa_score(score_true: List[int], score_pred: List[int]) -> float:
-    if len(score_true) != len(score_pred):
-        raise ValueError("True and predicted scores must have the same length.")
-    if len(score_true) == 0:
-        return 0.0
-    kappa = np.corrcoef(score_true, score_pred)[0, 1]
-    return kappa
-
-def root_mean_squared_error(y_true, y_pred):
-    return math.sqrt(mean_squared_error(y_true, y_pred))
-
 def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     c1_pred = [d['c1_model'] for d in matched_data]
     c2_pred = [d['c2_model'] for d in matched_data]
@@ -130,10 +119,10 @@ def calculate_metrics(matched_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     f_score_c2 = fbeta_score(c2_true, c2_pred, beta=1, average='weighted')
     f_score_c3 = fbeta_score(c3_true, c3_pred, beta=1, average='weighted')
     f_score_c4 = fbeta_score(c4_true, c4_pred, beta=1, average='weighted')
-    kappa_c1 = cohen_kappa_score(c1_true, c1_pred)
-    kappa_c2 = cohen_kappa_score(c2_true, c2_pred)
-    kappa_c3 = cohen_kappa_score(c3_true, c3_pred)
-    kappa_c4 = cohen_kappa_score(c4_true, c4_pred)
+    kappa_c1 = cohen_kappa_score(c1_true, c1_pred, weights='quadratic')
+    kappa_c2 = cohen_kappa_score(c2_true, c2_pred, weights='quadratic')
+    kappa_c3 = cohen_kappa_score(c3_true, c3_pred, weights='quadratic')
+    kappa_c4 = cohen_kappa_score(c4_true, c4_pred, weights='quadratic')
     exact_c1 = sum(1 for t, p in zip(c1_true, c1_pred) if t == p) / len(c1_true) * 100
     exact_c2 = sum(1 for t, p in zip(c2_true, c2_pred) if t == p) / len(c2_true) * 100
     exact_c3 = sum(1 for t, p in zip(c3_true, c3_pred) if t == p) / len(c3_true) * 100
