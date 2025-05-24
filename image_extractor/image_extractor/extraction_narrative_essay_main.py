@@ -4,13 +4,16 @@ import click
 import time
 import json
 import os
-from image_extractor.service.essay_narrative_evaluation import OpenAiEssayEvaluator, VertexAiEssayEvaluator, AnthropicEssayEvaluator
+from image_extractor.service.essay_narrative_evaluation import OpenAiEssayEvaluator, VertexAiEssayEvaluator, AnthropicEssayEvaluator, GemmaEssayEvaluator, GemmaHFEssayEvaluator, GemmaChatHFEssayEvaluator
 import pandas as pd
 
 class Model(StrEnum):
     OPENAI = "openai"
     VERTEXAI = "vertexai"  
     ANTHROPIC = "anthropic"
+    GEMMA = "gemma"
+    GEMMA_HF = "gemma-hf"
+    GEMMA_CHAT_HF = "gemma-chat-hf"
 
 @click.group()
 def cli():
@@ -56,6 +59,15 @@ def evaluate_essays(csv_file: str, model: str, output_dir: str, start_index: int
     elif model == Model.ANTHROPIC.value:
         evaluator = AnthropicEssayEvaluator()
         model_type = os.getenv("ANTHROPIC_MODEL", "").replace("claude-", "")
+    elif model == Model.GEMMA.value:
+        evaluator = GemmaEssayEvaluator()
+        model_type = "gemma-3-27b-it"
+    elif model == Model.GEMMA_HF.value:
+        evaluator = GemmaHFEssayEvaluator()
+        model_type = "gemma-3-1b-it"
+    elif model == Model.GEMMA_CHAT_HF.value:
+        evaluator = GemmaChatHFEssayEvaluator()
+        model_type = "gemma-3-1b-it-chat"
     else:
         raise ValueError(f"Unsupported model type: {model}")
 

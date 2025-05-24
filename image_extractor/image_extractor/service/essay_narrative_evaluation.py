@@ -7,7 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.language_models.chat_models import BaseChatModel
 from image_extractor.config import cfg
 from langchain_openai import ChatOpenAI
-from langchain_google_vertexai import ChatVertexAI
+from langchain_google_vertexai import ChatVertexAI, GemmaVertexAIModelGarden, GemmaLocalHF, GemmaChatLocalHF
 from langchain_anthropic import ChatAnthropic
 from image_extractor.model.essay_narrative_evaluate import EssayNarrativeEvaluation
 
@@ -76,7 +76,7 @@ def create_essay_evaluation_chain(chat_model: BaseChatModel):
             ("system", "Você é um avaliador experiente de redações narrativas, com base nos critérios de correção utilizados em avaliações oficiais do ensino fundamental"),
             ("user", PROMPT_INSTRUCTION)
         ])
-    elif isinstance(chat_model, ChatVertexAI):
+    elif isinstance(chat_model, (ChatVertexAI, GemmaVertexAIModelGarden, GemmaLocalHF, GemmaChatLocalHF)):
         prompt_template = ChatPromptTemplate.from_messages([
             ("user", PROMPT_INSTRUCTION)
         ])
@@ -146,6 +146,18 @@ class OpenAiEssayEvaluator(EssayEvaluator):
 class VertexAiEssayEvaluator(EssayEvaluator):
     def __init__(self):
         super().__init__(cfg.vertexai_gemini)
+
+class GemmaEssayEvaluator(EssayEvaluator):
+    def __init__(self):
+        super().__init__(cfg.gemma_vertexai)
+
+class GemmaHFEssayEvaluator(EssayEvaluator):
+    def __init__(self):
+        super().__init__(cfg.gemma_hf)
+
+class GemmaChatHFEssayEvaluator(EssayEvaluator):
+    def __init__(self):
+        super().__init__(cfg.gemma_chat_hf)
 
 class AnthropicEssayEvaluator(EssayEvaluator):
     def __init__(self):
