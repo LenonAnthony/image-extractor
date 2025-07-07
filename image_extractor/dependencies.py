@@ -10,6 +10,7 @@ dependencies = [
     "torcheval",
     "google-cloud-vision",
     "langchain-anthropic",
+    "langchain-huggingface",
     "scikit-learn"
 ]
 

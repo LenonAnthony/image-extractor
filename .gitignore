@@ -313,3 +313,19 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,node
+
+essay_results
+essay_results_gpt
+essay_results_old
+evaluation_results
+evaluation_results_old
+evaluation_results_gpt
+evaluation_results_gaia
+evaluation_results_mistral
+evaluation_results_gemma
+essay_results_claude
+essay_results_llama
+essay_results_mistral
+essay_results_mistral_small
+essay_results_gaia
+essay_results_gemma

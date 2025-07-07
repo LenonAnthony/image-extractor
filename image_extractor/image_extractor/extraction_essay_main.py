@@ -4,13 +4,16 @@ import click
 import time
 import json
 import os
-from image_extractor.service.essay_evaluation import OpenAiEssayEvaluator, VertexAiEssayEvaluator, AnthropicEssayEvaluator
+from image_extractor.service.essay_evaluation import HuggingFaceEssayEvaluator, OllamaEssayEvaluator, OpenAiEssayEvaluator, VertexAiEssayEvaluator, AnthropicEssayEvaluator, MistralEssayEvaluator
 import pandas as pd
 
 class Model(StrEnum):
     OPENAI = "openai"
     VERTEXAI = "vertexai"  
     ANTHROPIC = "anthropic"
+    MISTRAL = "mistral"
+    LLAMA = "llama"
+    HUGGINGFACE = "huggingface"
 
 @click.group()
 def cli():
@@ -56,6 +59,16 @@ def evaluate_essays(csv_file: str, model: str, output_dir: str, start_index: int
     elif model == Model.ANTHROPIC.value:
         evaluator = AnthropicEssayEvaluator()
         model_type = os.getenv("ANTHROPIC_MODEL", "").replace("claude-", "")
+    elif model == Model.MISTRAL.value:
+        evaluator = MistralEssayEvaluator()
+        model_type = os.getenv("MISTRAL_MODEL", "").replace("mistral-", "")
+    elif model == Model.LLAMA.value:
+        evaluator = OllamaEssayEvaluator()
+        model_type = os.getenv("OLLAMA_MODEL", "").replace("llama-", "")
+    elif model == Model.HUGGINGFACE.value:
+        evaluator = HuggingFaceEssayEvaluator()
+        model_type = os.getenv("HUGGINGFACE_REPO_ID", "").replace("huggingface-", "")
+        model_type = model_type.replace("/", "_")
     else:
         raise ValueError(f"Unsupported model type: {model}")
 
