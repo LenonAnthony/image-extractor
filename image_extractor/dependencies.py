@@ -3,8 +3,7 @@ import sys
 
 # dependencies to install
 dependencies = [
-    "numpy",
-    "python-dotenv", 
+    "python-dotenv",
     "pandas",
     "python-Levenshtein",
     "langchain-google-vertexai==2.0.11",

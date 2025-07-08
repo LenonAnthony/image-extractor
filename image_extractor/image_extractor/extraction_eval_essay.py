@@ -232,8 +232,8 @@ def main():
     parser.add_argument(
         "--model",
         required=True,
-        choices=["openai", "vertexai", "google_vision", "anthropic", "ollama"],
-        help="Model to evaluate (openai, vertexai, google_vision, anthropic, ollama)",
+        choices=["openai", "vertexai", "google_vision", "anthropic"],
+        help="Model to evaluate (openai, vertexai, google_vision, anthropic)",
     )
     parser.add_argument(
         "--extension",
@@ -258,15 +258,11 @@ def main():
         if args.model == "openai"
         else (
             os.getenv("GEMINI_MODEL")
-            if args.model == "vertexai"
+            if args.model == "gemini"
             else (
                 os.getenv("ANTHROPIC_MODEL")
                 if args.model == "anthropic"
-                else (
-                    os.getenv("OLLAMA_MODEL", "deepseek-r1:7b").replace(":", "_")
-                    if args.model == "ollama"
-                    else "google_vision"
-                )
+                else os.getenv("OPENAI_MODEL")
             )
         )  
     )

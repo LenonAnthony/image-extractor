@@ -1,9 +1,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,node
-*.json
-*.jpeg
-*.jpg
+
 *.png
+*.jpg
+*.jpeg
+*.json
 
 ### Node ###
 # Logs
@@ -287,6 +288,8 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+image_extractor/image_extractor/dataset-15-test
 
 # Pyre type checker
 .pyre/

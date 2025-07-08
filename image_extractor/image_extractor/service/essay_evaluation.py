@@ -8,7 +8,6 @@ from image_extractor.config import cfg
 from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
 from langchain_anthropic import ChatAnthropic
-from langchain_ollama import ChatOllama
 from image_extractor.model.essay_evaluate import EssayEvaluation
 
 PROMPT_INSTRUCTION = """Avalie a redação abaixo de acordo com os cinco critérios estabelecidos, atribuindo uma nota entre 0 e 200 para cada competência, totalizando um máximo de 1000 pontos. A pontuação deve ser dada em intervalos de 40 pontos, e a distribuição deve se aproximar das correções oficiais de redações semelhantes. Considere os seguintes critérios:
@@ -41,10 +40,6 @@ def create_essay_evaluation_chain(chat_model: BaseChatModel):
             ("system", "Você é um avaliador de redações experiente com foco nos critérios de avaliação do ENEM."),
             ("user", PROMPT_INSTRUCTION)
         ])
-    elif isinstance(chat_model, ChatOllama):
-        prompt_template = ChatPromptTemplate.from_messages([
-            ("user", PROMPT_INSTRUCTION)
-        ])
     else:
         raise ValueError(f"Model type {type(chat_model)} not supported")
     
@@ -55,23 +50,13 @@ def execute_essay_evaluation(
 ) -> Dict[str, Any]:
     start_time = time.time()
     chain = create_essay_evaluation_chain(chat_model)
+    evaluation = chain.invoke({
+        "essay_text": essay_text,
+        "prompt_text": prompt_text
+    })
     
-    try:
-        evaluation = chain.invoke({
-            "essay_text": essay_text,
-            "prompt_text": prompt_text
-        })
-        evaluation.total_score = evaluation.c1 + evaluation.c2 + evaluation.c3 + evaluation.c4 + evaluation.c5
-        evaluation.id = essay_id
-            
-    except Exception as e:
-        print(f"Error processing essay {essay_id}: {e}. Returning empty result.")
-        evaluation = EssayEvaluation(
-            id=essay_id,
-            c1=0, c2=0, c3=0, c4=0, c5=0,
-            total_score=0,
-            justification=f"Error occurred: {str(e)}"
-        )
+    evaluation.total_score = evaluation.c1 + evaluation.c2 + evaluation.c3 + evaluation.c4 + evaluation.c5
+    evaluation.id = essay_id
     
     elapsed_time = time.time() - start_time
     result = evaluation.model_dump()
@@ -117,7 +102,3 @@ class VertexAiEssayEvaluator(EssayEvaluator):
 class AnthropicEssayEvaluator(EssayEvaluator):
     def __init__(self):
         super().__init__(cfg.chat_anthropic)
-
-class OllamaEssayEvaluator(EssayEvaluator):
-    def __init__(self):
-        super().__init__(cfg.chat_ollama)

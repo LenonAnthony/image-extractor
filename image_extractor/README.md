@@ -1,6 +1,6 @@
 # Image Extractor
 
-Extracts text from images using LLMs, like OpenAI gpt-4o and Gemini Flash.
+Extracts text from images using LLMs, like OpenAI gpt-4o, Gemini Flash, Claude and so on.
 
 You can either convert the images sequentially or in batches using a simple command line tool.
 
@@ -9,19 +9,38 @@ You can either convert the images sequentially or in batches using a simple comm
 ```
 conda create -n image_extractor python=3.13
 conda activate image_extractor
-pip install poetry
-poetry install
+cd image_extractor
+python dependencies.py
+```
+# Configuration
+- Before start the analysis, make sure you configurate the right LLM in `config.py` by 
+uncommenting the LLM calls.
+- Be aware if you have the exact key names you need to configurate, on your `.env`
+# Text extraction of images
+- To extract text from images, this is the command (change the params if applicable)
+```
+python extraction_main.py convert-folder --folder database-test --model vertexai --extension jpg
+```
+- To eval the extraction to its original text, these are the commands for essays, lines and words (change the params if applicable)
+```
+python extraction_eval_essay.py --model vertexai --extension jpg --sample-dir database-test --csv-file dataset-name-test.csv
+
+python extraction_eval_lines.py --model openai --extension jpg --sample-dir database-test --csv-file dataset-name-test.csv
+
+python extraction_eval.py --model openai --extension jpg --sample-dir database-test --csv-file dataset-name-test.csv
 ```
 
-# Usage examples
-
+# Prediction of essays score
+- Example of how to extract essays score from LLM
 ```
-python .\image_extractor\extraction_main.py convert-folder --folder .\files --model google --extension jfif
-python .\image_extractor\extraction_main.py convert-folder --folder .\files --model google --extension jfif --batch_size 2
+python -m image_extractor.extraction_essay_main evaluate-essays --csv_file test.csv --model vertexai --output_dir ./essay_results
 ```
-
+- Once you have the `essay_results` with the scores in json, run the eval of essays score
 ```
-python .\image_extractor\extraction_main.py convert-folder --folder .\files --model openai --extension jfif
-python .\image_extractor\extraction_main.py convert-folder --folder .\files --model openai --extension jfif --batch_size 2
+python -m image_extractor.score_eval_essay \
+  --csv test.csv \
+  --predictions-dir essay_results \
+  --output-dir ./evaluation_results \
+  --model anthropic
 ```
 
