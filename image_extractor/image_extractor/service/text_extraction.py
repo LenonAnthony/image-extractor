@@ -3,6 +3,16 @@ import base64
 from pathlib import Path
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.language_models.chat_models import BaseChatModel
+<<<<<<< Updated upstream
+=======
+from image_extractor.config import cfg
+from langchain_openai import ChatOpenAI
+from langchain_google_vertexai import ChatVertexAI
+from langchain_anthropic import ChatAnthropic
+from langchain_ollama import ChatOllama
+from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
+from google.cloud import vision
+>>>>>>> Stashed changes
 
 from image_extractor.config import cfg
 from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
@@ -30,6 +40,60 @@ def convert_base64(image_path: Path) -> str:
     bytes = image_path.read_bytes()
     return base64.b64encode(bytes).decode("utf-8")
 
+<<<<<<< Updated upstream
+=======
+def create_text_extract_chain(chat_model: BaseChatModel):
+    if isinstance(chat_model, ChatOpenAI):
+        prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", PROMPT_INSTRUCTION),
+                (
+                    "user",
+                    [
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": "data:image/jpeg;base64,{image_data}"},
+                        }
+                    ],
+                ),
+            ]
+        )
+    elif isinstance(chat_model, ChatVertexAI):
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("user", [
+                {"type": "text", "text": PROMPT_INSTRUCTION},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "data:image/jpeg;base64,{image_data}"},
+                }
+            ])
+        ])
+    elif isinstance(chat_model, ChatAnthropic):
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("system", PROMPT_INSTRUCTION),
+            (
+                "user",
+                [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": "data:image/jpeg;base64,{image_data}"},
+                    }
+                ],
+            ),
+        ])
+    elif isinstance(chat_model, ChatOllama):
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("user", [
+                {"type": "text", "text": PROMPT_INSTRUCTION},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "data:image/jpeg;base64,{image_data}"},
+                }
+            ])
+        ])
+    else:
+        raise ValueError(f"Model type {type(chat_model)} not supported")
+>>>>>>> Stashed changes
 
 def create_text_extract_chain(chat_model: BaseChatModel):
     return prompt | chat_model.with_structured_output(TextExtract)
@@ -93,4 +157,44 @@ class OpenAiConversion(AiConversion):
 class GoogleAiConversion(AiConversion):
 
     def __init__(self):
+<<<<<<< Updated upstream
         super().__init__(cfg.google_ai)
+=======
+        super().__init__(cfg.vertexai_gemini)
+
+class GoogleVisionConversion(AiConversion):
+    def __init__(self):
+        super().__init__(cfg.google_vision)
+
+    def convert_to_text(self, image_path: Path) -> TextExtract:
+        client = self.model
+        with open(image_path, "rb") as image_file:
+            content = image_file.read()
+        image = vision.Image(content=content)
+        response = client.text_detection(image=image)
+        texts = response.text_annotations
+
+        if texts:
+            extracted_text = texts[0].description
+        else:
+            extracted_text = ""
+
+        if response.error.message:
+            raise Exception(
+                f"{response.error.message}\nFor more info on error messages, check: "
+                "https://cloud.google.com/apis/design/errors"
+            )
+
+        return TextExtract(
+            main_text=extracted_text,
+        )
+
+class AnthropicConversion(AiConversion):
+    def __init__(self):
+        super().__init__(cfg.chat_anthropic)
+
+class OllamaConversion(AiConversion):
+    def __init__(self):
+        super().__init__(cfg.chat_ollama)
+
+>>>>>>> Stashed changes
