@@ -8,6 +8,7 @@ from image_extractor.config import cfg
 from langchain_openai import ChatOpenAI
 from langchain_google_vertexai import ChatVertexAI
 from langchain_anthropic import ChatAnthropic
+from langchain_ollama import ChatOllama
 from image_extractor.model.essay_evaluate import EssayEvaluation
 
 PROMPT_INSTRUCTION = """Avalie a redação abaixo de acordo com os cinco critérios estabelecidos, atribuindo uma nota entre 0 e 200 para cada competência, totalizando um máximo de 1000 pontos. A pontuação deve ser dada em intervalos de 40 pontos, e a distribuição deve se aproximar das correções oficiais de redações semelhantes. Considere os seguintes critérios:
@@ -36,6 +37,11 @@ def create_essay_evaluation_chain(chat_model: BaseChatModel):
             ("user", PROMPT_INSTRUCTION)
         ])
     elif isinstance(chat_model, ChatAnthropic):
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("system", "Você é um avaliador de redações experiente com foco nos critérios de avaliação do ENEM."),
+            ("user", PROMPT_INSTRUCTION)
+        ])
+    elif isinstance(chat_model, ChatOllama):
         prompt_template = ChatPromptTemplate.from_messages([
             ("system", "Você é um avaliador de redações experiente com foco nos critérios de avaliação do ENEM."),
             ("user", PROMPT_INSTRUCTION)
@@ -102,3 +108,7 @@ class VertexAiEssayEvaluator(EssayEvaluator):
 class AnthropicEssayEvaluator(EssayEvaluator):
     def __init__(self):
         super().__init__(cfg.chat_anthropic)
+
+class OllamaEssayEvaluator(EssayEvaluator):
+    def __init__(self):
+        super().__init__(cfg.chat_ollama)
