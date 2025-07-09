@@ -86,18 +86,29 @@ def parse_huggingface_response(response: str, essay_id: int) -> EssayEvaluation:
             key = key.strip().lower()
             value = int(value.strip())
             scores[key] = value
+
+    if len(scores) != 5:
+        evaluation = EssayEvaluation(
+            c1=0,
+            c2=0,
+            c3=0,
+            c4=0,
+            c5=0,
+        )
+        return evaluation
     
-    evaluation = EssayEvaluation(
-        c1=scores.get('c1', 0),
-        c2=scores.get('c2', 0),
-        c3=scores.get('c3', 0),
-        c4=scores.get('c4', 0),
-        c5=scores.get('c5', 0),
-        total_score=scores.get('c1', 0) + scores.get('c2', 0) + scores.get('c3', 0) + scores.get('c4', 0) + scores.get('c5', 0),
-        id=essay_id
-    )
-    
-    return evaluation
+    else:
+        evaluation = EssayEvaluation(
+            c1=scores.get('c1', 0),
+            c2=scores.get('c2', 0),
+            c3=scores.get('c3', 0),
+            c4=scores.get('c4', 0),
+            c5=scores.get('c5', 0),
+            total_score=scores.get('c1', 0) + scores.get('c2', 0) + scores.get('c3', 0) + scores.get('c4', 0) + scores.get('c5', 0),
+            id=essay_id
+        )
+        
+        return evaluation
 
 def execute_essay_evaluation(
     chat_model: BaseChatModel, essay_text: str, prompt_text: str, essay_id: int
@@ -109,6 +120,7 @@ def execute_essay_evaluation(
             "essay_text": essay_text,
             "prompt_text": prompt_text
         })
+        print("raw response: ", response.content)
         evaluation = parse_huggingface_response(response.content, essay_id)
     else:
         evaluation = chain.invoke({
