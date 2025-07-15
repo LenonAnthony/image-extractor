@@ -4,16 +4,13 @@ import click
 import time
 import json
 import os
-from image_extractor.service.essay_evaluation import HuggingFaceEssayEvaluator, OllamaEssayEvaluator, OpenAiEssayEvaluator, VertexAiEssayEvaluator, AnthropicEssayEvaluator, MistralEssayEvaluator
+from image_extractor.service.essay_narrative_evaluation import OpenAiEssayEvaluator, VertexAiEssayEvaluator, AnthropicEssayEvaluator
 import pandas as pd
 
 class Model(StrEnum):
     OPENAI = "openai"
     VERTEXAI = "vertexai"  
     ANTHROPIC = "anthropic"
-    MISTRAL = "mistral"
-    LLAMA = "llama"
-    HUGGINGFACE = "huggingface"
 
 @click.group()
 def cli():
@@ -36,7 +33,7 @@ def cli():
     "--output_dir", default="./output", help="Directory to save evaluation results"
 )
 @click.option(
-    "--start_index", default=1, help="Index to start processing from in the CSV file"
+    "--start_index", default=0, help="Index to start processing from in the CSV file"
 )
 @click.option(
     "--end_index", default=None, type=int, help="Index to end processing at in the CSV file"
@@ -59,16 +56,6 @@ def evaluate_essays(csv_file: str, model: str, output_dir: str, start_index: int
     elif model == Model.ANTHROPIC.value:
         evaluator = AnthropicEssayEvaluator()
         model_type = os.getenv("ANTHROPIC_MODEL", "").replace("claude-", "")
-    elif model == Model.MISTRAL.value:
-        evaluator = MistralEssayEvaluator()
-        model_type = os.getenv("MISTRAL_MODEL", "").replace("mistral-", "")
-    elif model == Model.LLAMA.value:
-        evaluator = OllamaEssayEvaluator()
-        model_type = os.getenv("OLLAMA_MODEL", "").replace("llama-", "")
-    elif model == Model.HUGGINGFACE.value:
-        evaluator = HuggingFaceEssayEvaluator()
-        model_type = os.getenv("HUGGINGFACE_REPO_ID", "").replace("huggingface-", "")
-        model_type = model_type.replace("/", "_")
     else:
         raise ValueError(f"Unsupported model type: {model}")
 
@@ -82,12 +69,12 @@ def evaluate_essays(csv_file: str, model: str, output_dir: str, start_index: int
             continue
             
         click.echo(f"Evaluating essay {idx}")
-        essay_text = row["text"]
+        essay_text = row["essay"]
         prompt_text = row["prompt"]
         
         start_essay = time.time()
         try:
-            result = evaluator.evaluate_essay(essay_text, prompt_text, idx)
+            result = evaluator.evaluate_narrative_essay(essay_text, prompt_text, idx)
             elapsed_essay = time.time() - start_essay
             
             result["elapsed"] = elapsed_essay
