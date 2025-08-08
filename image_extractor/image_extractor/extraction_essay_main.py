@@ -59,7 +59,7 @@ def evaluate_essays(csv_file: str, model: str, output_dir: str, start_index: int
         model_type = os.getenv("ANTHROPIC_MODEL", "").replace("claude-", "")
     elif model == Model.OLLAMA.value:
         evaluator = OllamaEssayEvaluator()
-        model_type = os.getenv("OLLAMA_MODEL", "qwen2.5vl:7b").replace(":", "_")
+        model_type = os.getenv("OLLAMA_MODEL", "minicpm-v:8b").replace(":", "_")
     else:
         raise ValueError(f"Unsupported model type: {model}")
 

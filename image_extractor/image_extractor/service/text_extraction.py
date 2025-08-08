@@ -10,6 +10,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
 from image_extractor.model.text_extract import TextExtract, TextExtractWithImage
 from google.cloud import vision
+from PIL import Image
 
 PROMPT_INSTRUCTION = """Extraia o texto da imagem. Considere o idioma Português."""
 
@@ -159,3 +160,71 @@ class OllamaConversion(AiConversion):
     def __init__(self):
         super().__init__(cfg.chat_ollama)
 
+class HuggingFaceConversion(AiConversion):
+    def __init__(self):
+        super().__init__({
+            'model': cfg.hf_model,
+            'processor': cfg.hf_processor
+        })
+
+    def convert_to_text(self, image_path: Path) -> TextExtract:
+        """
+        Implementação de baixo nível que espelha o script de teste funcional,
+        bypassing a `pipeline()` do transformers.
+        """
+        model = self.model['model']
+        processor = self.model['processor']
+        
+        if not model or not processor:
+            raise ValueError("Modelo ou processador Hugging Face não inicializado. Verifique a config.")
+
+        # 1. Carregar a imagem
+        image = Image.open(image_path).convert("RGB")
+
+        # 2. Construir o prompt com o template de chat
+        messages = [
+            {"role": "user", "content": [{"type": "image"}, {"type": "text", "text": PROMPT_INSTRUCTION}]}
+        ]
+        prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
+        # 3. Processar entradas (texto e imagem)
+        inputs = processor(text=prompt, images=image, return_tensors="pt").to(model.device)
+
+        # 4. Gerar a saída do modelo
+        output = model.generate(**inputs, max_new_tokens=2048) # Aumentado para textos longos de redações
+
+        # 5. Decodificar e limpar a resposta
+        response = processor.decode(output[0], skip_special_tokens=True)
+        
+        # Lógica de limpeza para extrair apenas a resposta do modelo
+        model_response_start = response.find("<start_of_turn>model\n")
+        if model_response_start != -1:
+            final_response = response[model_response_start + len("<start_of_turn>model\n"):].strip()
+        else:
+            final_response = response.strip()
+            
+        # Retorna o objeto TextExtract, preenchendo apenas o campo principal
+        return TextExtract(main_text=final_response)
+
+    def convert_to_text_batches(
+        self, image_paths: List[Path], batch_size: int
+    ) -> List[TextExtractWithImage]:
+        """
+        Implementação de lote que itera sobre as imagens, chamando a lógica
+        de conversão individual que agora funciona corretamente.
+        """
+        res = []
+        for path in image_paths:
+            try:
+                extract = self.convert_to_text(path)
+                # Cria o objeto de resultado com os campos disponíveis
+                res.append(
+                    TextExtractWithImage(
+                        path=path,
+                        main_text=extract.main_text
+                    )
+                )
+            except Exception as e:
+                print(f"Failed to process {path}: {e}")
+                continue
+        return res

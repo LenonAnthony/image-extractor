@@ -10,22 +10,35 @@ from Levenshtein import editops
 
 load_dotenv()
 
-locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+try:
+    locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+except locale.Error:
+    try:
+        locale.setlocale(locale.LC_ALL, "C.UTF-8")
+    except locale.Error:
+        locale.setlocale(locale.LC_ALL, "")
 
 
 def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str, dict]:
     results = {}
     path = Path(sample_dir)
-    model = "openai_4o"
-    json_files = list(path.rglob(f"{model}_*.json"))
+    # Determinar o nome do modelo baseado no parâmetro
+    if model == "huggingface":
+        model_name = "huggingface_CEIA-UFG_Gemma-3-Gaia-PT-BR-4b-it"
+    else:
+        model_name = model
+    json_files = list(path.rglob(f"{model_name}_*.json"))
     processed_dirs = set()
 
     for json_file in json_files:
         with open(json_file, "r", encoding="utf-8") as f:
             data = json.load(f)
-            relative_path = json_file.parent.relative_to(path)
+            # Extrair o número do arquivo (última parte do nome)
             file_num = json_file.stem.split("_")[-1]
-            image_key = (relative_path / f"{file_num}.{extension}").as_posix()
+            # Criar a chave da imagem baseada no caminho relativo
+            relative_path = json_file.parent.relative_to(path)
+            # Usar .jpeg como extensão padrão para as imagens
+            image_key = f"{relative_path}/{file_num}.jpeg"
             main_text = (
                 data["main_text"].lower().strip().replace('"""', '"').replace('"', "")
             )
@@ -39,10 +52,10 @@ def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str,
     missing_dirs = all_subdirs - processed_dirs
 
     for dir_missing in missing_dirs:
-        print(f"Warning: No JSON files for model '{model}' found in {dir_missing}")
+        print(f"Warning: No JSON files for model '{model_name}' found in {dir_missing}")
 
     if not json_files:
-        print(f"Warning: No JSON files found for model '{model}' in {sample_dir}")
+        print(f"Warning: No JSON files found for model '{model_name}' in {sample_dir}")
     return results
 
 
@@ -139,11 +152,46 @@ def generate_report(
     df: pd.DataFrame, errors_df: pd.DataFrame, output_path: str, model_name: str
 ):
     total_files = len(df)
-    exact_matches_char = df["exact_match_char"].sum()
+    total_elapsed = df["elapsed"].sum()
+    
+    # Calcular métricas de palavras
+    total_words = 0
+    correct_words = 0
+    total_word_errors = 0
+    
+    total_characters_gt = 0
+    total_cer = 0
+    
+    for _, row in df.iterrows():
+        gt_text = row["ground_truth"]
+        extracted_text = row["extracted_text"]
+        
+        gt_words = gt_text.split()
+        extracted_words = extracted_text.split()
+        total_words += len(gt_words)
+        # Calcular palavras corretas e erros
+        ops = editops(gt_words, extracted_words)
+        word_errors = len(ops)
+        total_word_errors += word_errors
+        correct_words += len(gt_words) - word_errors
+        
+        # Métricas de caracteres
+        total_characters_gt += len(gt_text)
+        char_ops = editops(gt_text, extracted_text)
+        total_cer += len(char_ops)
+    
+    # Calcular métricas médias
     avg_precision = df["precision"].mean()
     avg_recall = df["recall"].mean()
     avg_f1 = df["f1"].mean()
-    total_elapsed = df["elapsed"].sum()
+    
+    # Calcular WER e CER
+    avg_wer = (total_word_errors / total_words * 100) if total_words > 0 else 0
+    cer_rate = (total_cer / total_characters_gt * 100) if total_characters_gt > 0 else 0
+    avg_cer_per_file = total_cer / total_files if total_files > 0 else 0
+    
+    # Calcular porcentagem de palavras corretas
+    correct_words_percentage = (correct_words / total_words * 100) if total_words > 0 else 0
 
     word_error_counts = errors_df[errors_df["error_type"].isin(["replace", "delete"])]
     word_error_counts = (
@@ -156,12 +204,17 @@ def generate_report(
 
     print(f"\nAnalysis Summary:")
     print(f"Total files analyzed: {total_files}")
-    print(
-        f"Exact matches: {exact_matches_char} ({(exact_matches_char/total_files)*100:.2f}%)"
-    )
+    print(f"Total words: {total_words}")
+    print(f"Correct words: {correct_words} ({correct_words_percentage:.2f}%)")
+    print(f"Total word errors: {total_word_errors}")
+    print(f"Average WER (Word Error Rate): {avg_wer:.2f}%")
+    print(f"Total character errors (CER): {total_cer}")
+    print(f"Total characters in ground truth: {total_characters_gt}")
+    print(f"CER Rate: {cer_rate:.2f}%")
+    print(f"Average CER per file: {avg_cer_per_file:.2f}")
     print(f"Average Precision: {avg_precision:.2f}")
     print(f"Average Recall: {avg_recall:.2f}")
-    print(f"Average F1-Score: {avg_f1:.2f}")
+    print(f"Average F1: {avg_f1:.2f}")
     print(f"Total elapsed time: {locale.format_string('%.2f', total_elapsed)} seconds")
 
     print("\nTop 10:")
@@ -186,8 +239,8 @@ def main():
     parser.add_argument(
         "--model",
         required=True,
-        choices=["openai", "vertexai", "google_vision", "anthropic", "ollama"],
-        help="Model to evaluate (openai, vertexai, google_vision, anthropic, or ollama)",
+        choices=["openai", "vertexai", "google_vision", "anthropic", "ollama", "huggingface"],
+        help="Model to evaluate (openai, vertexai, google_vision, anthropic, ollama, or huggingface)",
     )
     parser.add_argument(
         "--extension",
@@ -207,6 +260,9 @@ def main():
 
     sample_dir = args.sample_dir
     words_csv = os.path.join(sample_dir, args.csv_file)
+    # Se o CSV não existir no diretório especificado, tentar no diretório pai
+    if not os.path.exists(words_csv):
+        words_csv = os.path.join(os.path.dirname(sample_dir), args.csv_file)
     output_model = (
         os.getenv("OPENAI_MODEL")
         if args.model == "openai"
@@ -217,7 +273,7 @@ def main():
                 os.getenv("ANTHROPIC_MODEL")
                 if args.model == "anthropic"
                 else (
-                    os.getenv("OLLAMA_MODEL", "qwen2.5vl:7b").replace(":", "_")
+                    os.getenv("OLLAMA_MODEL", "minicpm-v:8b").replace(":", "_")
                     if args.model == "ollama"
                     else os.getenv("OPENAI_MODEL")
                 )

@@ -10,7 +10,13 @@ from Levenshtein import editops
 
 load_dotenv()
 
-locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+try:
+    locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+except locale.Error:
+    try:
+        locale.setlocale(locale.LC_ALL, "C.UTF-8")
+    except locale.Error:
+        locale.setlocale(locale.LC_ALL, "")
 
 def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str, dict]:
     results = {}
@@ -29,12 +35,18 @@ def load_model_results(sample_dir: str, model: str, extension: str) -> Dict[str,
 
             image_key = (relative_path / f"{file_num}.{extension}").as_posix()
 
-            main_text = (
-                data["main_text"].lower().strip().replace('"""', '"').replace('"', "")
-            )
+            # O arquivo JSON contém o texto diretamente, não em um campo main_text
+            if isinstance(data, dict):
+                main_text = data.get("main_text", "").lower().strip().replace('"""', '"').replace('"', "")
+                elapsed = data.get("elapsed", 0.0)
+            else:
+                # Se data é uma string, é o texto extraído diretamente
+                main_text = str(data).lower().strip().replace('"""', '"').replace('"', "")
+                elapsed = 0.0
+            
             results[image_key] = {
                 "main_text": main_text,
-                "elapsed": data.get("elapsed", 0.0),
+                "elapsed": elapsed,
             }
             processed_dirs.add(json_file.parent)
 
@@ -232,8 +244,8 @@ def main():
     parser.add_argument(
         "--model",
         required=True,
-        choices=["openai", "vertexai", "google_vision", "anthropic", "ollama"],
-        help="Model to evaluate (openai, vertexai, google_vision, anthropic, or ollama)",
+        choices=["openai", "vertexai", "google_vision", "anthropic", "ollama", "huggingface"],
+        help="Model to evaluate (openai, vertexai, google_vision, anthropic, ollama, or huggingface)",
     )
     parser.add_argument(
         "--extension",
@@ -263,9 +275,13 @@ def main():
                 os.getenv("ANTHROPIC_MODEL")
                 if args.model == "anthropic"
                 else (
-                    os.getenv("OLLAMA_MODEL", "qwen2.5vl:7b").replace(":", "_")
+                    os.getenv("OLLAMA_MODEL", "minicpm-v:8b").replace(":", "_")
                     if args.model == "ollama"
-                    else os.getenv("OPENAI_MODEL")
+                    else (
+                        "CEIA-UFG_Gemma-3-Gaia-PT-BR-4b-it"
+                        if args.model == "huggingface"
+                        else os.getenv("OPENAI_MODEL")
+                    )
                 )
             )
         )  
