@@ -7,10 +7,11 @@ You can either convert the images sequentially or in batches using a simple comm
 # Install
 
 ```
-conda create -n image_extractor python=3.13
-conda activate image_extractor
+conda create -n image_extractor python=3.13 or python3 -m venv .venv
+conda activate image_extractor / source .venv/bin/activate
 cd image_extractor
-python dependencies.py
+pip install poetry
+poetry install
 ```
 # Configuration
 - Before start the analysis, make sure you configurate the right LLM in `config.py` by 
